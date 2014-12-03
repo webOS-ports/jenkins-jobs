@@ -127,6 +127,7 @@ function set_images {
 }
 
 function run_build {
+    declare -i RESULT=0
     sanity-check
     if [ "${BUILD_VERSION}" = "stable" ] ; then
         scripts/staging_update.sh
@@ -139,8 +140,11 @@ function run_build {
     cd ${BUILD_TOPDIR}
     . ./setup-env
     export MACHINE="${BUILD_MACHINE}"
-    bitbake -k ${BUILD_IMAGES}
+    /usr/bin/time -f "${BUILD_TIME_STR}" \
+        bitbake -k ${BUILD_IMAGES} 2>&1 | tee /dev/stderr | grep '^TIME:' >> ${BUILD_TIME_LOG}
+    RESULT+=${PIPESTATUS[0]}
     delete_unnecessary_images
+    exit ${RESULT}
 }
 
 function sanity-check {

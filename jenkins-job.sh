@@ -257,10 +257,15 @@ function run_prepare {
 }
 
 function run_rsync {
-    scripts/staging_sync.sh ${BUILD_TOPDIR}/tmp-glibc/deploy                                           jenkins@milla.nao:~/htdocs/builds/luneos-${BUILD_VERSION}/
+    if [ "${BUILD_VERSION}" = "stable" ] ; then
+        scripts/staging_sync.sh ${BUILD_TOPDIR}/tmp-glibc/deploy      jenkins@milla.nao:~/htdocs/builds/luneos-${BUILD_VERSION}-staging/wip
+    else
+        scripts/staging_sync.sh ${BUILD_TOPDIR}/tmp-glibc/deploy      jenkins@milla.nao:~/htdocs/builds/luneos-${BUILD_VERSION}/
+    fi
 
-    rsync -avir --delete ${BUILD_TOPDIR}/sstate-cache                                                  jenkins@milla.nao:~/htdocs/builds/luneos-${BUILD_VERSION}/
-    rsync -avir --no-links --exclude '*.done' --exclude git2 --exclude svn --exclude bzr downloads jenkins@milla.nao:~/htdocs/sources/
+    rsync -avir --delete ${BUILD_TOPDIR}/sstate-cache                 jenkins@milla.nao:~/htdocs/builds/luneos-${BUILD_VERSION}/
+    rsync -avir --no-links --exclude '*.done' --exclude git2 \
+                           --exclude svn --exclude bzr downloads      jenkins@milla.nao:~/htdocs/sources/
 }
 
 function run_new-staging {

@@ -127,6 +127,7 @@ function set_images {
 }
 
 function run_build {
+    sanity-check
     if [ "${BUILD_VERSION}" = "stable" ] ; then
         scripts/staging_update.sh
         . scripts/staging_header.sh
@@ -140,6 +141,31 @@ function run_build {
     export MACHINE="${BUILD_MACHINE}"
     bitbake -k ${BUILD_IMAGES}
     delete_unnecessary_images
+}
+
+function sanity-check {
+    # check that tmpfs is mounted and has enough space
+    if ! mount | grep -q "${BUILD_TOPDIR}/tmp-glibc type tmpfs"; then
+        echo "ERROR: ${BUILD_SCRIPT_NAME}-${BUILD_SCRIPT_VERSION} tmpfs isn't mounted in ${BUILD_TOPDIR}/tmp-glibc"
+        exit 1
+    fi
+    local available_tmpfs=`df -BG ${BUILD_TOPDIR}/tmp-glibc | grep ${BUILD_TOPDIR}/tmp-glibc | awk '{print $4}' | sed 's/G$//g'`
+    if [ "${available_tmpfs}" -lt 15 ] ; then
+        echo "ERROR: ${BUILD_SCRIPT_NAME}-${BUILD_SCRIPT_VERSION} tmpfs mounted in ${BUILD_TOPDIR}/tmp-glibc has less than 15G free"
+        exit 1
+    fi
+    local tmpfs tmpfs_allocated_all=0
+    for tmpfs in `mount | grep "tmp-glibc type tmpfs" | awk '{print $3}'`; do
+        df -BG $tmpfs | grep $tmpfs;
+        local tmpfs_allocated=`df -BG $tmpfs | grep $tmpfs | awk '{print $3}' | sed 's/G$//g'`
+        tmpfs_allocated_all=`expr ${tmpfs_allocated_all} + ${tmpfs_allocated}`
+    done
+    # we have 2 tmpfs mounts with max size 80GB, but only 97GB of RAM, show error when more than 65G is already allocated
+    # in them
+    if [ "${tmpfs_allocated_all}" -gt 65 ] ; then
+        echo "ERROR: ${BUILD_SCRIPT_NAME}-${BUILD_SCRIPT_VERSION} sum of allocated space in tmpfs mounts is more than 65G, clean some builds"
+        exit 1
+    fi
 }
 
 function run_cleanup {
@@ -272,22 +298,22 @@ function delete_unnecessary_images {
     case ${BUILD_MACHINE} in
         grouper|maguro|mako)
             # keep only *-package.zip
-	    rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/webos-ports-image-*
-	    rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/webos-ports-dev-image-*
-	    rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/zImage*
-	    rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/modules-*
-	    rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/initramfs*
+            rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/webos-ports-image-*
+            rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/webos-ports-dev-image-*
+            rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/zImage*
+            rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/modules-*
+            rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/initramfs*
             ;;
         qemuarm|tenderloin|a500)
             # keep zImage and rootfs.tar.gz
-	    rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/initramfs*
+            rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/initramfs*
             ;;
         qemux86|qemux86-64)
             # keep only image.zip
-	    rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/webos-ports-image-*
-	    rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/webos-ports-dev-image-*
-	    rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/bzImage*
-	    rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/modules-*
+            rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/webos-ports-image-*
+            rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/webos-ports-dev-image-*
+            rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/bzImage*
+            rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/modules-*
             ;;
         *)
             echo "ERROR: ${BUILD_SCRIPT_NAME}-${BUILD_SCRIPT_VERSION} Unrecognized machine: '${BUILD_MACHINE}', script doesn't know which images to build"
@@ -296,8 +322,17 @@ function delete_unnecessary_images {
     esac
 }
 
+function sanity_check_workspace {
+    # BUILD_TOPDIR path should contain BUILD_VERSION, otherwise there is probably incorrect WORKSPACE in jenkins config
+    if ! echo ${BUILD_TOPDIR} | grep -q "/luneos-${BUILD_VERSION}/" ; then
+        echo "ERROR: ${BUILD_SCRIPT_NAME}-${BUILD_SCRIPT_VERSION} BUILD_TOPDIR: '${BUILD_TOPDIR}' path should contain luneos-${BUILD_VERSION} directory, is workspace set correctly in jenkins config?"
+	exit 1
+    fi
+}
+
 print_timestamp start
 parse_job_name
+sanity_check_workspace
 set_images
 
 echo "INFO: ${BUILD_SCRIPT_NAME}-${BUILD_SCRIPT_VERSION} Running: '${BUILD_TYPE}', machine: '${BUILD_MACHINE}', version: '${BUILD_VERSION}', images: '${BUILD_IMAGES}'"

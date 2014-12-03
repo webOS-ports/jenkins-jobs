@@ -268,6 +268,7 @@ function run_sync-to-public {
 }
 
 function delete_unnecessary_images {
+    rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/README_-_DO_NOT_DELETE_FILES_IN_THIS_DIRECTORY.txt
     case ${BUILD_MACHINE} in
         grouper|maguro|mako)
             # keep only *-package.zip

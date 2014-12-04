@@ -74,6 +74,9 @@ function parse_job_name {
         *_workspace-*)
             # global jobs
             ;;
+        *_feeds-*)
+            # global jobs
+            ;;
         *)
             echo "ERROR: ${BUILD_SCRIPT_NAME}-${BUILD_SCRIPT_VERSION} Unrecognized machine in JOB_NAME: '${JOB_NAME}', it should end with '_a500', '_grouper', '_maguro', '_mako', '_qemuarm', '_qemux86', '_qemux86-64' or '_tenderloin'"
             exit 1

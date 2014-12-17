@@ -343,9 +343,13 @@ function sanity_check_workspace {
         echo "ERROR: ${BUILD_SCRIPT_NAME}-${BUILD_SCRIPT_VERSION} BUILD_TOPDIR: '${BUILD_TOPDIR}' path should contain luneos-${BUILD_VERSION} directory, is workspace set correctly in jenkins config?"
         exit 1
     fi
-    if ps aux | grep ${BUILD_TOPDIR}/bitbake/bin/[b]itbake ; then
-        echo "ERROR: ${BUILD_SCRIPT_NAME}-${BUILD_SCRIPT_VERSION} There is some bitbake process already running from '${BUILD_TOPDIR}', maybe some stalled process from aborted job?"
-        exit 1
+    if ps aux | grep ${BUILD_TOPDIR}/bitbake/bin/[b]itbake; then
+        if [ "${BUILD_TYPE}" = "kill-stalled" ] ; then
+            echo "WARN: ${BUILD_SCRIPT_NAME}-${BUILD_SCRIPT_VERSION} There is some bitbake process already running from '${BUILD_TOPDIR}', maybe some stalled process from aborted job?"
+        else
+            echo "ERROR: ${BUILD_SCRIPT_NAME}-${BUILD_SCRIPT_VERSION} There is some bitbake process already running from '${BUILD_TOPDIR}', maybe some stalled process from aborted job?"
+            exit 1
+        fi
     fi
 }
 

@@ -131,6 +131,7 @@ function set_images {
 
 function run_build {
     declare -i RESULT=0
+    cd ${BUILD_TOPDIR}
     sanity-check
     if [ "${BUILD_VERSION}" = "stable" ] ; then
         scripts/staging_update.sh
@@ -140,7 +141,6 @@ function run_build {
         export CURRENT_STAGING=0
     fi
     export WEBOS_DISTRO_BUILD_ID="${BUILD_VERSION}-${CURRENT_STAGING}-${BUILD_NUMBER}"
-    cd ${BUILD_TOPDIR}
     . ./setup-env
     export MACHINE="${BUILD_MACHINE}"
     /usr/bin/time -f "${BUILD_TIME_STR}" \
@@ -339,6 +339,10 @@ function sanity_check_workspace {
     if ! echo ${BUILD_TOPDIR} | grep -q "/luneos-${BUILD_VERSION}/" ; then
         echo "ERROR: ${BUILD_SCRIPT_NAME}-${BUILD_SCRIPT_VERSION} BUILD_TOPDIR: '${BUILD_TOPDIR}' path should contain luneos-${BUILD_VERSION} directory, is workspace set correctly in jenkins config?"
 	exit 1
+    fi
+    if ps aux | grep ${BUILD_TOPDIR}/bitbake/bin/[b]itbake ; then
+        echo "ERROR: ${BUILD_SCRIPT_NAME}-${BUILD_SCRIPT_VERSION} There is some bitbake process already running from '${BUILD_TOPDIR}', maybe some stalled process from aborted job?"
+        exit 1
     fi
 }
 

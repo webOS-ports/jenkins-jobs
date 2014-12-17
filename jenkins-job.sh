@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="1.0.0"
+BUILD_SCRIPT_VERSION="1.1.0"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -95,6 +95,9 @@ function parse_job_name {
             ;;
         *_workspace-rsync)
             BUILD_TYPE="rsync"
+            ;;
+        *_workspace-kill-stalled)
+            BUILD_TYPE="kill-stalled"
             ;;
         *_feeds-new-staging)
             BUILD_TYPE="new-staging"
@@ -338,11 +341,23 @@ function sanity_check_workspace {
     # BUILD_TOPDIR path should contain BUILD_VERSION, otherwise there is probably incorrect WORKSPACE in jenkins config
     if ! echo ${BUILD_TOPDIR} | grep -q "/luneos-${BUILD_VERSION}/" ; then
         echo "ERROR: ${BUILD_SCRIPT_NAME}-${BUILD_SCRIPT_VERSION} BUILD_TOPDIR: '${BUILD_TOPDIR}' path should contain luneos-${BUILD_VERSION} directory, is workspace set correctly in jenkins config?"
-	exit 1
+        exit 1
     fi
     if ps aux | grep ${BUILD_TOPDIR}/bitbake/bin/[b]itbake ; then
         echo "ERROR: ${BUILD_SCRIPT_NAME}-${BUILD_SCRIPT_VERSION} There is some bitbake process already running from '${BUILD_TOPDIR}', maybe some stalled process from aborted job?"
         exit 1
+    fi
+}
+
+function kill_stalled_bitbake_processes {
+    if ps aux | grep ${BUILD_TOPDIR}/bitbake/bin/[b]itbake ; then
+        local BITBAKE_PIDS=`ps aux | grep ${BUILD_TOPDIR}/bitbake/bin/[b]itbake | awk '{print $2}' | xargs`
+        [ -n "${BITBAKE_PIDS}" ] && kill ${BITBAKE_PIDS}
+        sleep 10
+        ps aux | grep ${BUILD_TOPDIR}/bitbake/bin/[b]itbake
+        local BITBAKE_PIDS=`ps aux | grep ${BUILD_TOPDIR}/bitbake/bin/[b]itbake | awk '{print $2}' | xargs`
+        [ -n "${BITBAKE_PIDS}" ] && kill -9 ${BITBAKE_PIDS}
+        ps aux | grep ${BUILD_TOPDIR}/bitbake/bin/[b]itbake
     fi
 }
 
@@ -371,6 +386,9 @@ case ${BUILD_TYPE} in
         ;;
     sync-to-public)
         run_sync-to-public
+        ;;
+    kill-stalled)
+        kill_stalled_bitbake_processes
         ;;
     build)
         run_build

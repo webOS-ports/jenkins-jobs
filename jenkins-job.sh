@@ -134,7 +134,6 @@ function set_images {
 
 function run_build {
     declare -i RESULT=0
-    cd ${BUILD_TOPDIR}
     sanity-check
     if [ "${BUILD_VERSION}" = "stable" ] ; then
         scripts/staging_update.sh
@@ -144,6 +143,7 @@ function run_build {
         export CURRENT_STAGING=0
     fi
     export WEBOS_DISTRO_BUILD_ID="${BUILD_VERSION}-${CURRENT_STAGING}-${BUILD_NUMBER}"
+    cd ${BUILD_TOPDIR}
     . ./setup-env
     export MACHINE="${BUILD_MACHINE}"
     /usr/bin/time -f "${BUILD_TIME_STR}" \

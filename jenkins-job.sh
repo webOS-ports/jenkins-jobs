@@ -188,7 +188,7 @@ function run_cleanup {
         if [ -d tmp-glibc ] ; then
             cd tmp-glibc;
             mkdir old || true
-            mv -f cooker* deploy log pkgdata sstate-control stamps sysroots work work-shared abi_version qa.log saved_tmpdir cache/default-glibc cache/bb_codeparser* cache/local_file_checksum_cache.dat old || true
+            mv -f cooker* buildstats deploy log pkgdata sstate-control stamps sysroots work work-shared abi_version qa.log saved_tmpdir cache/default-glibc cache/bb_codeparser* cache/local_file_checksum_cache.dat old || true
             #~/daemonize.sh rm -rf old
             rm -rf old
         fi

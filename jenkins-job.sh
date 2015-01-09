@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="1.1.0"
+BUILD_SCRIPT_VERSION="2.0.0"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -117,13 +117,13 @@ function set_images {
     fi
     case ${BUILD_MACHINE} in
         grouper|maguro|mako)
-            BUILD_IMAGES="webos-ports-dev-package"
+            BUILD_IMAGES="luneos-dev-package"
             ;;
         qemuarm|tenderloin|a500)
-            BUILD_IMAGES="webos-ports-dev-image"
+            BUILD_IMAGES="luneos-dev-image"
             ;;
         qemux86|qemux86-64)
-            BUILD_IMAGES="webos-ports-dev-emulator-appliance"
+            BUILD_IMAGES="luneos-dev-emulator-appliance"
             ;;
         *)
             echo "ERROR: ${BUILD_SCRIPT_NAME}-${BUILD_SCRIPT_VERSION} Unrecognized machine: '${BUILD_MACHINE}', script doesn't know which images to build"
@@ -199,7 +199,7 @@ function run_cleanup {
 function run_compare-signatures {
     cd ${BUILD_TOPDIR}
     . ./setup-env
-    openembedded-core/scripts/sstate-diff-machines.sh --machines="qemux86 maguro grouper" --targets=webos-ports-dev-image --tmpdir=tmp-glibc/;
+    openembedded-core/scripts/sstate-diff-machines.sh --machines="qemux86 maguro grouper" --targets=luneos-dev-image --tmpdir=tmp-glibc/;
     if [ ! -d sstate-diff ]; then mkdir sstate-diff; fi
     mv tmp-glibc/sstate-diff/* sstate-diff
 
@@ -313,8 +313,8 @@ function delete_unnecessary_images {
     case ${BUILD_MACHINE} in
         grouper|maguro|mako)
             # keep only *-package.zip
-            rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/webos-ports-image-*
-            rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/webos-ports-dev-image-*
+            rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/luneos-image-*
+            rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/luneos-dev-image-*
             rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/zImage*
             rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/modules-*
             rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/initramfs*
@@ -325,8 +325,8 @@ function delete_unnecessary_images {
             ;;
         qemux86|qemux86-64)
             # keep only image.zip
-            rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/webos-ports-image-*
-            rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/webos-ports-dev-image-*
+            rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/luneos-image-*
+            rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/luneos-dev-image-*
             rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/bzImage*
             rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/modules-*
             ;;

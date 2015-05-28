@@ -77,6 +77,9 @@ function parse_job_name {
         *_feeds-*)
             # global jobs
             ;;
+        *_update-manifest)
+            # global jobs
+            ;;
         *)
             echo "ERROR: ${BUILD_SCRIPT_NAME}-${BUILD_SCRIPT_VERSION} Unrecognized machine in JOB_NAME: '${JOB_NAME}', it should end with '_a500', '_grouper', '_maguro', '_mako', '_qemuarm', '_qemux86', '_qemux86-64' or '_tenderloin'"
             exit 1
@@ -104,6 +107,9 @@ function parse_job_name {
             ;;
         *_feeds-sync-to-public)
             BUILD_TYPE="sync-to-public"
+            ;;
+        *_update-manifest)
+            BUILD_TYPE="update-manifest"
             ;;
         *)
             BUILD_TYPE="build"
@@ -278,6 +284,16 @@ function run_rsync {
                            --exclude svn --exclude bzr downloads      jenkins@milla.nao:~/htdocs/sources/
 }
 
+function run_update-manifest() {
+    if [ "${BUILD_VERSION}" = "testing" ] ; then
+        echo "Updating manifest for testing"
+        wget http://build.webos-ports.org/luneos-testing/manifest.json -O manifest.json
+        scripts/update-manifest.py -n 1 -r luneos-testing-${BUILD_VERSION} manifest.json
+        scp manifest.json jenkins@milla.nao:~/htdocs/builds/luneos-${BUILD_VERSION}/
+        rm manifest.json
+    fi
+}
+
 function run_new-staging {
     . scripts/staging_header.sh
 
@@ -401,6 +417,9 @@ case ${BUILD_TYPE} in
         ;;
     build)
         run_build
+        ;;
+    update-manifest)
+        run_update-manifest
         ;;
     *)
         echo "ERROR: ${BUILD_SCRIPT_NAME}-${BUILD_SCRIPT_VERSION} Unrecognized build type: '${BUILD_TYPE}', script doesn't know how to execute such job"

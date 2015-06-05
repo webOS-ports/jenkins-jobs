@@ -291,13 +291,17 @@ function run_rsync {
 }
 
 function run_update-manifest() {
+    echo "BUILD_VERSION = $BUILD_VERSION"
+    echo "BUILD_ID = $BUILD_ID"
+    echo "SUPPORTED_MACHINES = $SUPPORTED_MACHINES"
+
     if [ "${BUILD_VERSION}" = "testing" ] ; then
         # Cleanup any left over artifacts
-        rm manifest.json device-images.json
+        rm -f manifest.json device-images.json
 
         echo "Updating change manifest for testing"
         wget http://build.webos-ports.org/luneos-testing/manifest.json -O manifest.json
-        scripts/update-manifest.py -n 1 -r luneos-testing-${BUILD_ID} manifest.json
+        scripts/update-manifest.py -n ${BUILD_ID} -r luneos-testing-${BUILD_ID} manifest.json
 
         echo "Updating device image manifest for testing for machines ${SUPPORTED_MACHINES}"
         wget http://build.webos-ports.org/luneos-testing/device-images.json -O device-images.json
@@ -316,6 +320,10 @@ function run_update-manifest() {
             image_md5=`cat ${image}.md5 | cut -d' ' -f1`
 
             scripts/update-manifest.py -d -v ${BUILD_ID} -m $machine --image=$image_url --image-md5=$image_md5 device-images.json
+            if [ ! $? -eq 0 ] ; then
+                echo "Failed to update device image manifest!"
+                exit 1
+            fi
         done
 
         # Sync everything to the public server

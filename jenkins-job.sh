@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.1.0"
+BUILD_SCRIPT_VERSION="2.1.1"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -336,9 +336,9 @@ function run_release {
         echo "ERROR: FEED_NUMBER, RELEASE_NAME, UNSUPPORTED_MACHINES cannot be empty"
         exit 1
     fi
-    ssh jenkins@milla.nao mkdir ~/htdocs/builds/releases/${RELEASE_NAME}
-    ssh jenkins@milla.nao cp -ra ~/htdocs/builds/luneos-stable-staging/${FEED_NUMBER}/* ~/htdocs/builds/releases/${RELEASE_NAME}
-    ssh jenkins@milla.nao for UNSUPPORTED_MACHINE in ${UNSUPPORTED_MACHINES}; do rm -rf ~/htdocs/builds/releases/${RELEASE_NAME}/images/${UNSUPPORTED_MACHINE}; done
+    ssh jenkins@milla.nao "mkdir ~/htdocs/builds/releases/${RELEASE_NAME}"
+    ssh jenkins@milla.nao "cp -ra ~/htdocs/builds/luneos-stable-staging/${FEED_NUMBER}/* ~/htdocs/builds/releases/${RELEASE_NAME}"
+    ssh jenkins@milla.nao "for UNSUPPORTED_MACHINE in ${UNSUPPORTED_MACHINES}; do rm -rf ~/htdocs/builds/releases/${RELEASE_NAME}/images/\${UNSUPPORTED_MACHINE}; done"
 }
 
 function delete_unnecessary_images {

@@ -292,11 +292,35 @@ function run_rsync {
 
 function run_update-manifest() {
     if [ "${BUILD_VERSION}" = "testing" ] ; then
-        echo "Updating manifest for testing"
+        # Cleanup any left over artifacts
+        rm manifest.json device-images.json
+
+        echo "Updating change manifest for testing"
         wget http://build.webos-ports.org/luneos-testing/manifest.json -O manifest.json
         scripts/update-manifest.py -n 1 -r luneos-testing-${BUILD_ID} manifest.json
+
+        echo "Updating device image manifest for testing"
+        wget http://build.webos-ports.org/luneos-testing/device-images.json -O device-images.json
+        for machine in ${SUPPORTED_MACHINES} ; do
+            image=`ssh jenkins@milla.nao find htdocs/builds/luneos-testing/images/$machine -type f -name luneos-dev-package-$machine* ! -name luneos-dev-package-$machine.zip ! -name *.md5 | sort -r | head -n 1`
+            if [ -z "$image" ] ; then
+                echo "Couldn't find image for machine $machine"
+                exit 1
+            fi
+
+            image_url="http://build.webos-ports.org/luneos-testing/images/$machine/$image"
+
+            # Extract image md5 checksum
+            wget ${image_url}.md5 -O ${image}.md5
+            image_md5=`cat ${image}.md5 | cut -d' ' -f1`
+
+            scripts/update-manifest.py -d -v ${BUILD_ID} -m $machine --image=$image_url --image-md5=$image_md5 device-images.json
+        done
+
+        # Sync everything to the public server
         scp manifest.json jenkins@milla.nao:~/htdocs/builds/luneos-${BUILD_VERSION}/
-        rm manifest.json
+        scp device-images.json jenkins@milla.nao:~/htdocs/builds/luneos-${BUILD_VERSION}/
+        rm manifest.json device-images.json
     fi
 }
 

@@ -294,7 +294,7 @@ function run_update-manifest() {
     if [ "${BUILD_VERSION}" = "testing" ] ; then
         echo "Updating manifest for testing"
         wget http://build.webos-ports.org/luneos-testing/manifest.json -O manifest.json
-        scripts/update-manifest.py -n 1 -r luneos-testing-${BUILD_VERSION} manifest.json
+        scripts/update-manifest.py -n 1 -r luneos-testing-${BUILD_ID} manifest.json
         scp manifest.json jenkins@milla.nao:~/htdocs/builds/luneos-${BUILD_VERSION}/
         rm manifest.json
     fi

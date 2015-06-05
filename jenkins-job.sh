@@ -299,15 +299,16 @@ function run_update-manifest() {
         wget http://build.webos-ports.org/luneos-testing/manifest.json -O manifest.json
         scripts/update-manifest.py -n 1 -r luneos-testing-${BUILD_ID} manifest.json
 
-        echo "Updating device image manifest for testing"
+        echo "Updating device image manifest for testing for machines ${SUPPORTED_MACHINES}"
         wget http://build.webos-ports.org/luneos-testing/device-images.json -O device-images.json
         for machine in ${SUPPORTED_MACHINES} ; do
-            image=`ssh jenkins@milla.nao find htdocs/builds/luneos-testing/images/$machine -type f -name luneos-dev-package-$machine* ! -name luneos-dev-package-$machine.zip ! -name *.md5 | sort -r | head -n 1`
-            if [ -z "$image" ] ; then
+            image_path=`ssh jenkins@milla.nao find htdocs/builds/luneos-testing/images/$machine -type f -name luneos-dev-package-$machine* ! -name luneos-dev-package-$machine.zip ! -name *.md5 | sort -r | head -n 1`
+            if [ -z "$image_path" ] ; then
                 echo "Couldn't find image for machine $machine"
                 exit 1
             fi
 
+            image=`basename $image_path`
             image_url="http://build.webos-ports.org/luneos-testing/images/$machine/$image"
 
             # Extract image md5 checksum

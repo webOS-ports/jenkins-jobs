@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.0.0"
+BUILD_SCRIPT_VERSION="2.1.0"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -80,6 +80,9 @@ function parse_job_name {
         *_update-manifest)
             # global jobs
             ;;
+        *_release)
+            # global job
+            ;;
         *)
             echo "ERROR: ${BUILD_SCRIPT_NAME}-${BUILD_SCRIPT_VERSION} Unrecognized machine in JOB_NAME: '${JOB_NAME}', it should end with '_a500', '_grouper', '_maguro', '_mako', '_qemuarm', '_qemux86', '_qemux86-64' or '_tenderloin'"
             exit 1
@@ -110,6 +113,9 @@ function parse_job_name {
             ;;
         *_update-manifest)
             BUILD_TYPE="update-manifest"
+            ;;
+        *_release)
+            BUILD_TYPE="release"
             ;;
         *)
             BUILD_TYPE="build"
@@ -317,11 +323,22 @@ function run_new-staging {
 function run_sync-to-public {
     if [ -z "$FEED_NUMBERS" ]; then
         echo "ERROR: FEED_NUMBERS wasn't set"
+        exit 1
     fi
 
     for FEED in $FEED_NUMBERS; do
         bash -x scripts/staging_sync_to_public_feed.sh jenkins@milla.nao $FEED
     done
+}
+
+function run_release {
+    if [ -z "${FEED_NUMBER}" -o -z "${RELEASE_NAME}" -o -z "${UNSUPPORTED_MACHINES}" ]; then
+        echo "ERROR: FEED_NUMBER, RELEASE_NAME, UNSUPPORTED_MACHINES cannot be empty"
+        exit 1
+    fi
+    ssh jenkins@milla.nao mkdir ~/htdocs/builds/releases/${RELEASE_NAME}
+    ssh jenkins@milla.nao cp -ra ~/htdocs/builds/luneos-stable-staging/${FEED_NUMBER}/* ~/htdocs/builds/releases/${RELEASE_NAME}
+    ssh jenkins@milla.nao for UNSUPPORTED_MACHINE in ${UNSUPPORTED_MACHINES}; do rm -rf ~/htdocs/builds/releases/${RELEASE_NAME}/images/${UNSUPPORTED_MACHINE}; done
 }
 
 function delete_unnecessary_images {
@@ -405,6 +422,9 @@ case ${BUILD_TYPE} in
         ;;
     rsync)
         run_rsync
+        ;;
+    release)
+        run_release
         ;;
     new-staging)
         run_new-staging

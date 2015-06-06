@@ -371,6 +371,7 @@ function run_release {
     fi
     ssh jenkins@milla.nao "mkdir ~/htdocs/builds/releases/${RELEASE_NAME}"
     ssh jenkins@milla.nao "cp -ra ~/htdocs/builds/luneos-stable-staging/${FEED_NUMBER}/* ~/htdocs/builds/releases/${RELEASE_NAME}"
+    ssh jenkins@milla.nao "rm -rf ~/htdocs/builds/releases/${RELEASE_NAME}/ipk"
     ssh jenkins@milla.nao "for UNSUPPORTED_MACHINE in ${UNSUPPORTED_MACHINES}; do rm -rf ~/htdocs/builds/releases/${RELEASE_NAME}/images/\${UNSUPPORTED_MACHINE}; done"
 }
 

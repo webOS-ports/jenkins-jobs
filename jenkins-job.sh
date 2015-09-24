@@ -168,6 +168,7 @@ function run_build {
 function sanity-check {
     # check that tmpfs is mounted and has enough space
     if ! mount | grep -q "${BUILD_TOPDIR}/tmp-glibc type tmpfs"; then
+        [ ! -d ${BUILD_TOPDIR}/tmp-glibc ] && mkdir -p ${BUILD_TOPDIR}/tmp-glibc
         mount ${BUILD_TOPDIR}/tmp-glibc
     fi
     if ! mount | grep -q "${BUILD_TOPDIR}/tmp-glibc type tmpfs"; then

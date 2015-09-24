@@ -196,14 +196,10 @@ function run_cleanup {
         du -hs sstate-cache
         openembedded-core/scripts/sstate-cache-management.sh -L --cache-dir=sstate-cache -d -y || true
         du -hs sstate-cache
-        rm -f bitbake.lock pseudodone
-        if [ -d tmp-glibc ] ; then
-            cd tmp-glibc;
-            mkdir old || true
-            mv -f cooker* buildstats deploy log pkgdata sstate-control stamps sysroots work work-shared abi_version qa.log saved_tmpdir cache/default-glibc cache/bb_codeparser* cache/local_file_checksum_cache.dat old || true
-            #~/daemonize.sh rm -rf old
-            rm -rf old
-        fi
+        mkdir old || true
+        umount tmp-glibc || true
+        mv -f cache/bb_codeparser.dat* bitbake.lock pseudodone tmp-glibc* old || true
+        rm -rf old
     fi
     echo "Cleanup finished"
 }

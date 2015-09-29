@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.1.1"
+BUILD_SCRIPT_VERSION="2.1.2"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -329,7 +329,7 @@ function run_update-manifest() {
         # Sync everything to the public server
         scp manifest.json jenkins@milla.nao:~/htdocs/builds/luneos-${BUILD_VERSION}/
         scp device-images.json jenkins@milla.nao:~/htdocs/builds/luneos-${BUILD_VERSION}/
-        rm manifest.json device-images.json
+        rm manifest.json device-images.json ${image}.md5
     fi
 }
 

@@ -198,7 +198,7 @@ function run_cleanup {
     if [ -d ${BUILD_TOPDIR} ] ; then
         cd ${BUILD_TOPDIR};
         du -hs sstate-cache
-        openembedded-core/scripts/sstate-cache-management.sh -L --cache-dir=sstate-cache -d -y || true
+        openembedded-core/scripts/sstate-cache-management.sh -L --cache-dir=sstate-cache --extra-archs=armv7a-vfp-neon -d -y || true
         du -hs sstate-cache
         mkdir old || true
         umount tmp-glibc || true

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.1.2"
+BUILD_SCRIPT_VERSION="2.2.0"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -365,14 +365,16 @@ function run_sync-to-public {
 }
 
 function run_release {
-    if [ -z "${FEED_NUMBER}" -o -z "${RELEASE_NAME}" -o -z "${UNSUPPORTED_MACHINES}" ]; then
-        echo "ERROR: FEED_NUMBER, RELEASE_NAME, UNSUPPORTED_MACHINES cannot be empty"
+    if [ -z "${FEED_NUMBER}" -o -z "${RELEASE_NAME}" ]; then
+        echo "ERROR: FEED_NUMBER, RELEASE_NAME cannot be empty"
         exit 1
     fi
     ssh jenkins@milla.nao "mkdir ~/htdocs/builds/releases/${RELEASE_NAME}"
     ssh jenkins@milla.nao "cp -ra ~/htdocs/builds/luneos-stable-staging/${FEED_NUMBER}/* ~/htdocs/builds/releases/${RELEASE_NAME}"
     ssh jenkins@milla.nao "rm -rf ~/htdocs/builds/releases/${RELEASE_NAME}/ipk"
-    ssh jenkins@milla.nao "for UNSUPPORTED_MACHINE in ${UNSUPPORTED_MACHINES}; do rm -rf ~/htdocs/builds/releases/${RELEASE_NAME}/images/\${UNSUPPORTED_MACHINE}; done"
+    if [ -n "${UNSUPPORTED_MACHINES}" ] ; then
+        ssh jenkins@milla.nao "for UNSUPPORTED_MACHINE in ${UNSUPPORTED_MACHINES}; do rm -rf ~/htdocs/builds/releases/${RELEASE_NAME}/images/\${UNSUPPORTED_MACHINE}; done"
+    fi
 }
 
 function delete_unnecessary_images {

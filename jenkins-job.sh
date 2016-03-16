@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.3.2"
+BUILD_SCRIPT_VERSION="2.3.3"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -282,6 +282,7 @@ function run_prepare {
     echo 'IMAGE_FSTYPES_forcevariable = "tar.gz"' >> ${BUILD_TOPDIR}/conf/local.conf
     echo 'IMAGE_FSTYPES_forcevariable_qemux86 = "tar.gz vmdk"' >> ${BUILD_TOPDIR}/conf/local.conf
     echo 'IMAGE_FSTYPES_forcevariable_qemux86-64 = "tar.gz vmdk"' >> ${BUILD_TOPDIR}/conf/local.conf
+    echo 'IMAGE_FSTYPES_forcevariable_raspberrypi2 = "rpi-sdimg"' >> ${BUILD_TOPDIR}/conf/local.conf
 }
 
 function run_rsync {

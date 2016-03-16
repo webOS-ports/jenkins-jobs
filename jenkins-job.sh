@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.3.0"
+BUILD_SCRIPT_VERSION="2.3.1"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -303,7 +303,7 @@ function run_update-manifest() {
 
     if [ "${BUILD_VERSION}" = "testing" ] ; then
         # Cleanup any left over artifacts
-        rm -f manifest.json device-images.json
+        rm -vf manifest.json device-images.json
 
         echo "Updating change manifest for testing"
         wget http://build.webos-ports.org/luneos-testing/manifest.json -O manifest.json
@@ -330,12 +330,13 @@ function run_update-manifest() {
                 echo "Failed to update device image manifest!"
                 exit 1
             fi
+            rm -vf ${image}.md5
         done
 
         # Sync everything to the public server
         scp manifest.json jenkins@milla.nao:~/htdocs/builds/luneos-${BUILD_VERSION}/
         scp device-images.json jenkins@milla.nao:~/htdocs/builds/luneos-${BUILD_VERSION}/
-        rm manifest.json device-images.json ${image}.md5
+        rm -vf manifest.json device-images.json
     fi
 }
 

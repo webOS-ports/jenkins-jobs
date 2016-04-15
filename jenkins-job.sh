@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.3.4"
+BUILD_SCRIPT_VERSION="2.3.5"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -418,7 +418,6 @@ function delete_unnecessary_images {
             rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/luneos-dev-image-*.ext3
             rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/luneos-dev-image-*.manifest
             rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/modules-*
-            rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/Image*
             rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/bcm2835-bootfiles
             ;;
         *)

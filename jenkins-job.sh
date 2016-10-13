@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.3.7"
+BUILD_SCRIPT_VERSION="2.3.8"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -205,7 +205,7 @@ function run_cleanup {
         cd ${BUILD_TOPDIR};
         du -hs sstate-cache
         echo -n "number of openssl archives: " && find sstate-cache -name \*openssl\*populate_sysroot\*tgz | grep -v python-pyopenssl | grep -v python-native | wc -l
-        openembedded-core/scripts/sstate-cache-management.sh -L --cache-dir=sstate-cache --extra-archs=armv7a-vfp-neon,armv5e,i586,arm -d -y || true
+        openembedded-core/scripts/sstate-cache-management.sh -L --cache-dir=sstate-cache --extra-archs=armv7a-vfp-neon,armv5e,i586,arm,armv7a-neon,cortexa7hf-neon-vfpv4 -d -y || true
         echo -n "number of openssl archives: " && find sstate-cache -name \*openssl\*populate_sysroot\*tgz | grep -v python-pyopenssl | grep -v python-native | wc -l
         find sstate-cache -name \*openssl\*populate_sysroot\*tgz | grep -v python-pyopenssl | grep -v python-native
 

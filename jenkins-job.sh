@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.3.8"
+BUILD_SCRIPT_VERSION="2.3.9"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -53,6 +53,9 @@ function parse_job_name {
         *_grouper)
             BUILD_MACHINE="grouper"
             ;;
+        *_hammerhead)
+            BUILD_MACHINE="hammerhead"
+            ;;
         *_maguro)
             BUILD_MACHINE="maguro"
             ;;
@@ -90,7 +93,7 @@ function parse_job_name {
             # global job
             ;;
         *)
-            echo "ERROR: ${BUILD_SCRIPT_NAME}-${BUILD_SCRIPT_VERSION} Unrecognized machine in JOB_NAME: '${JOB_NAME}', it should end with '_a500', '_grouper', '_maguro', '_mako', '_qemuarm', '_qemux86', '_qemux86-64', '_tenderloin', '_raspberrypi2' or '_raspberrypi3'"
+            echo "ERROR: ${BUILD_SCRIPT_NAME}-${BUILD_SCRIPT_VERSION} Unrecognized machine in JOB_NAME: '${JOB_NAME}', it should end with '_a500', '_grouper', '_hammerhead', '_maguro', '_mako', '_qemuarm', '_qemux86', '_qemux86-64', '_tenderloin', '_raspberrypi2' or '_raspberrypi3'"
             exit 1
             ;;
     esac
@@ -134,7 +137,7 @@ function set_images {
         return
     fi
     case ${BUILD_MACHINE} in
-        grouper|maguro|mako)
+        grouper|maguro|mako|hammerhead)
             BUILD_IMAGES="luneos-dev-package"
             ;;
         qemuarm|tenderloin|a500|raspberrypi2|raspberrypi3)
@@ -394,7 +397,7 @@ function run_release {
 function delete_unnecessary_images {
     rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/README_-_DO_NOT_DELETE_FILES_IN_THIS_DIRECTORY.txt
     case ${BUILD_MACHINE} in
-        grouper|maguro|mako)
+        grouper|maguro|mako|hammerhead)
             # keep only *-package.zip
             rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/luneos-image-*
             rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/luneos-dev-image-*

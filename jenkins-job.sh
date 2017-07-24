@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.3.10"
+BUILD_SCRIPT_VERSION="2.3.11"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -480,10 +480,10 @@ set_images
 
 echo "INFO: ${BUILD_SCRIPT_NAME}-${BUILD_SCRIPT_VERSION} Running: '${BUILD_TYPE}', machine: '${BUILD_MACHINE}', version: '${BUILD_VERSION}', images: '${BUILD_IMAGES}'"
 
-# restrict it to 10GB to prevent triggering OOM killer on our jenkins server (which can kill some other
+# restrict it to 15GB to prevent triggering OOM killer on our jenkins server (which can kill some other
 # process instead of the build itself)
-ulimit -v 10485760
-ulimit -m 10485760
+ulimit -v 15728640
+ulimit -m 15728640
 
 case ${BUILD_TYPE} in
     cleanup)

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.3.11"
+BUILD_SCRIPT_VERSION="2.3.12"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -80,6 +80,9 @@ function parse_job_name {
         *_raspberrypi3)
             BUILD_MACHINE="raspberrypi3"
             ;;
+        *_raspberrypi3-64)
+            BUILD_MACHINE="raspberrypi3-64"
+            ;;
         *_workspace-*)
             # global jobs
             ;;
@@ -93,7 +96,7 @@ function parse_job_name {
             # global job
             ;;
         *)
-            echo "ERROR: ${BUILD_SCRIPT_NAME}-${BUILD_SCRIPT_VERSION} Unrecognized machine in JOB_NAME: '${JOB_NAME}', it should end with '_a500', '_grouper', '_hammerhead', '_maguro', '_mako', '_qemuarm', '_qemux86', '_qemux86-64', '_tenderloin', '_raspberrypi2' or '_raspberrypi3'"
+            echo "ERROR: ${BUILD_SCRIPT_NAME}-${BUILD_SCRIPT_VERSION} Unrecognized machine in JOB_NAME: '${JOB_NAME}', it should end with '_a500', '_grouper', '_hammerhead', '_maguro', '_mako', '_qemuarm', '_qemux86', '_qemux86-64', '_tenderloin', '_raspberrypi2' or '_raspberrypi3' or '_raspberrypi3-64'"
             exit 1
             ;;
     esac
@@ -140,7 +143,7 @@ function set_images {
         grouper|maguro|mako|hammerhead)
             BUILD_IMAGES="luneos-dev-package"
             ;;
-        qemuarm|tenderloin|a500|raspberrypi2|raspberrypi3)
+        qemuarm|tenderloin|a500|raspberrypi2|raspberrypi3|raspberrypi3-64)
             BUILD_IMAGES="luneos-dev-image"
             ;;
         qemux86|qemux86-64)
@@ -292,6 +295,8 @@ function run_prepare {
     echo 'IMAGE_FSTYPES_forcevariable_qemux86 = "tar.gz vmdk"' >> ${BUILD_TOPDIR}/conf/local.conf
     echo 'IMAGE_FSTYPES_forcevariable_qemux86-64 = "tar.gz vmdk"' >> ${BUILD_TOPDIR}/conf/local.conf
     echo 'IMAGE_FSTYPES_forcevariable_raspberrypi2 = "rpi-sdimg"' >> ${BUILD_TOPDIR}/conf/local.conf
+    echo 'IMAGE_FSTYPES_forcevariable_raspberrypi3 = "rpi-sdimg"' >> ${BUILD_TOPDIR}/conf/local.conf
+    echo 'IMAGE_FSTYPES_forcevariable_raspberrypi3-64 = "rpi-sdimg"' >> ${BUILD_TOPDIR}/conf/local.conf
 
     cat >> ${BUILD_TOPDIR}/conf/local.conf << EOF
 BB_DISKMON_DIRS = "\
@@ -428,7 +433,7 @@ function delete_unnecessary_images {
             rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/bzImage*
             rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/modules-*
             ;;
-        raspberrypi2|raspberrypi3)
+        raspberrypi2|raspberrypi3|raspberrypi3-64)
             # keep only luneos-dev-image-raspberrypiX.rpi-sdimg
             rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/luneos-image-*.tar.gz
             rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/luneos-image-*.ext3

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.3.12"
+BUILD_SCRIPT_VERSION="2.3.13"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -227,7 +227,7 @@ function run_cleanup {
 function run_compare-signatures {
     cd ${BUILD_TOPDIR}
     . ./setup-env
-    openembedded-core/scripts/sstate-diff-machines.sh --targets=luneos-dev-image --tmpdir=tmp-glibc/ --analyze --machines="maguro grouper qemux86" | tee log.compare-signatures
+    openembedded-core/scripts/sstate-diff-machines.sh --targets=luneos-dev-image --tmpdir=tmp-glibc/ --analyze --machines="hammerhead mako qemux86" | tee log.compare-signatures
     openembedded-core/scripts/sstate-diff-machines.sh --targets=luneos-dev-image --tmpdir=tmp-glibc/ --analyze --machines="raspberrypi2 raspberrypi3 mako" | tee -a log.compare-signatures
     if [ ! -d sstate-diff ]; then mkdir sstate-diff; fi
     mv tmp-glibc/sstate-diff/* sstate-diff

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.3.14"
+BUILD_SCRIPT_VERSION="2.3.15"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -323,7 +323,7 @@ function run_rsync {
         scripts/staging_sync.sh ${BUILD_TOPDIR}/tmp-glibc/deploy      jenkins@milla.nao:~/htdocs/builds/luneos-${BUILD_VERSION}/
     fi
 
-    rsync -avir --delete ${BUILD_TOPDIR}/sstate-cache                 jenkins@milla.nao:~/htdocs/builds/luneos-${BUILD_VERSION}/
+    rsync -avir --delete ${BUILD_TOPDIR}/sstate-cache/                jenkins@milla.nao:~/htdocs/builds/luneos-${BUILD_VERSION}/sstate-cache/
     rsync -avir --no-links --exclude '*.done' --exclude git2 \
                            --exclude svn --exclude bzr downloads      jenkins@milla.nao:~/htdocs/sources/
 }

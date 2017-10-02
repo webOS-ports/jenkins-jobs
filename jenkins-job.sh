@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.3.16"
+BUILD_SCRIPT_VERSION="2.3.17"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -209,17 +209,26 @@ function sanity-check {
 function run_cleanup {
     if [ -d ${BUILD_TOPDIR} ] ; then
         cd ${BUILD_TOPDIR};
-        du -hs sstate-cache
-        echo -n "number of openssl archives: " && find sstate-cache -name \*openssl\*populate_sysroot\*tgz | grep -v python-pyopenssl | grep -v python-native | wc -l
-        openembedded-core/scripts/sstate-cache-management.sh -L --cache-dir=sstate-cache --extra-archs=armv7a-vfp-neon,armv5e,i586,arm,armv7a-neon,cortexa7hf-neon-vfpv4,armv7ahf-neon,core2-64,aarch64 -d -y || true
-        echo -n "number of openssl archives: " && find sstate-cache -name \*openssl\*populate_sysroot\*tgz | grep -v python-pyopenssl | grep -v python-native | wc -l
-        find sstate-cache -name \*openssl\*populate_sysroot\*tgz | grep -v python-pyopenssl | grep -v python-native
+        ARCHS="armv7a-vfp-neon,armv5e,i586,arm,armv7a-neon,cortexa7hf-neon-vfpv4,armv7ahf-neon,core2-64,aarch64"
+        DU1=`du -hs sstate-cache`
+        echo "$DU1"
+        OPENSSL="find sstate-cache -name '*:openssl:*populate_sysroot*tgz'"
+        ARCHIVES1=`sh -c "${OPENSSL}"`; echo "number of openssl archives: `echo "$ARCHIVES1" | wc -l`"; echo "$ARCHIVES1"
+        oe-core/scripts/sstate-cache-management.sh --cache-dir=sstate-cache -y -d --extra-archs=${ARCHS// /,} || true
+        DU2=`du -hs sstate-cache`
+        echo "$DU2"
+        ARCHIVES2=`sh -c "${OPENSSL}"`; echo "number of openssl archives: `echo "$ARCHIVES2" | wc -l`"; echo "$ARCHIVES2"
 
-        du -hs sstate-cache
         mkdir old || true
         umount tmp-glibc || true
         mv -f cache/bb_codeparser.dat* bitbake.lock pseudodone tmp-glibc* old || true
         rm -rf old
+
+        echo "BEFORE:"
+        echo "number of openssl archives: `echo "$ARCHIVES1" | wc -l`"; echo "$ARCHIVES1"
+        echo "AFTER:"
+        echo "number of openssl archives: `echo "$ARCHIVES2" | wc -l`"; echo "$ARCHIVES2"
+        echo "BEFORE: $DU1, AFTER: $DU2"
     fi
     echo "Cleanup finished"
 }

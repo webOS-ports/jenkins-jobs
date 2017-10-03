@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.3.18"
+BUILD_SCRIPT_VERSION="2.3.19"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -210,12 +210,12 @@ function run_cleanup {
     if [ -d ${BUILD_TOPDIR} ] ; then
         cd ${BUILD_TOPDIR};
         ARCHS="armv7a-vfp-neon,armv5e,i586,arm,armv7a-neon,cortexa7hf-neon-vfpv4,armv7ahf-neon,core2-64,aarch64"
-        DU1=`du -hs sstate-cache`
+        DU1=`du -hs sstate-cache/`
         echo "$DU1"
-        OPENSSL="find sstate-cache -name '*:openssl:*populate_sysroot*tgz'"
+        OPENSSL="find sstate-cache/ -name '*:openssl:*populate_sysroot*tgz'"
         ARCHIVES1=`sh -c "${OPENSSL}"`; echo "number of openssl archives: `echo "$ARCHIVES1" | wc -l`"; echo "$ARCHIVES1"
         openembedded-core/scripts/sstate-cache-management.sh -L --cache-dir=sstate-cache -y -d --extra-archs=${ARCHS// /,} || true
-        DU2=`du -hs sstate-cache`
+        DU2=`du -hs sstate-cache/`
         echo "$DU2"
         ARCHIVES2=`sh -c "${OPENSSL}"`; echo "number of openssl archives: `echo "$ARCHIVES2" | wc -l`"; echo "$ARCHIVES2"
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.4.3"
+BUILD_SCRIPT_VERSION="2.4.4"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -508,10 +508,22 @@ function delete_unnecessary_images_webosose {
 }
 
 function sanity_check_workspace {
-    # BUILD_TOPDIR path should contain BUILD_VERSION, otherwise there is probably incorrect WORKSPACE in jenkins config
-    if ! echo ${BUILD_TOPDIR} | grep -q "/luneos-${BUILD_VERSION}/" ; then
-        echo "ERROR: ${BUILD_SCRIPT_NAME}-${BUILD_SCRIPT_VERSION} BUILD_TOPDIR: '${BUILD_TOPDIR}' path should contain luneos-${BUILD_VERSION} directory, is workspace set correctly in jenkins config?"
-        exit 1
+    if [ "${BUILD_VERSION}" = "webosose" ] ; then
+        # don't use webos-ports as a ${BUILD_DIR}
+        BUILD_TOPDIR="${BUILD_WORKSPACE}"
+        BUILD_TIME_LOG=${BUILD_TOPDIR}/time.txt
+        return
+        # BUILD_TOPDIR path should contain BUILD_VERSION, otherwise there is probably incorrect WORKSPACE in jenkins config
+        if ! echo ${BUILD_TOPDIR} | grep -q "/${BUILD_VERSION}/" ; then
+            echo "ERROR: ${BUILD_SCRIPT_NAME}-${BUILD_SCRIPT_VERSION} BUILD_TOPDIR: '${BUILD_TOPDIR}' path should contain ${BUILD_VERSION} directory, is workspace set correctly in jenkins config?"
+            exit 1
+        fi
+    else
+        # BUILD_TOPDIR path should contain BUILD_VERSION, otherwise there is probably incorrect WORKSPACE in jenkins config
+        if ! echo ${BUILD_TOPDIR} | grep -q "/luneos-${BUILD_VERSION}/" ; then
+            echo "ERROR: ${BUILD_SCRIPT_NAME}-${BUILD_SCRIPT_VERSION} BUILD_TOPDIR: '${BUILD_TOPDIR}' path should contain luneos-${BUILD_VERSION} directory, is workspace set correctly in jenkins config?"
+            exit 1
+        fi
     fi
     if ps aux | grep "${BUILD_TOPDIR}/bitbake/bin/[b]itbake"; then
         if [ "${BUILD_TYPE}" = "kill-stalled" ] ; then

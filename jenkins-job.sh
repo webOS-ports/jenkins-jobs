@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.3.19"
+BUILD_SCRIPT_VERSION="2.4.0"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -39,6 +39,9 @@ function parse_job_name {
             ;;
         luneos-unstable_*)
             BUILD_VERSION="unstable"
+            ;;
+        webosose_*)
+            BUILD_VERSION="webosose"
             ;;
         *)
             echo "ERROR: ${BUILD_SCRIPT_NAME}-${BUILD_SCRIPT_VERSION} Unrecognized version in JOB_NAME: '${JOB_NAME}', it should start with luneos- and 'stable', 'testing' or 'unstable'"
@@ -101,6 +104,10 @@ function parse_job_name {
             ;;
     esac
 
+    if [ "${BUILD_VERSION}" = "webosose" ] ; then
+        BUILD_TYPE="webosose"
+        return
+    fi
     case ${JOB_NAME} in
         *_workspace-cleanup)
             BUILD_TYPE="cleanup"
@@ -137,6 +144,10 @@ function parse_job_name {
 
 function set_images {
     if [ "${BUILD_TYPE}" != "build" ] ; then
+        return
+    fi
+    if [ "${BUILD_VERSION}" = "webosose" ] ; then
+        BUILD_IMAGES="webos-image"
         return
     fi
     case ${BUILD_MACHINE} in
@@ -492,6 +503,22 @@ function kill_stalled_bitbake_processes {
     fi
 }
 
+function run_webosose {
+    declare -i RESULT=0
+#    sanity-check
+    ./mcf ${BUILD_MACHINE}
+    ./mcf --command update --clean
+    . ./oe-init-build-env
+    export MACHINE="${BUILD_MACHINE}"
+
+    /usr/bin/time -f "${BUILD_TIME_STR}" \
+        bitbake -k ${BUILD_IMAGES} 2>&1 | tee /dev/stderr | grep '^TIME:' >> ${BUILD_TIME_LOG}
+    RESULT+=${PIPESTATUS[0]}
+
+    rsync -avir ${BUILD_TOPDIR}/BUILD/deploy/images/${BUILD_MACHINE}/${BUILD_IMAGES}*              jenkins@milla.nao:~/htdocs/builds/webosose/
+    exit ${RESULT}
+}
+
 print_timestamp start
 parse_job_name
 sanity_check_workspace
@@ -505,6 +532,9 @@ ulimit -v 15728640
 ulimit -m 15728640
 
 case ${BUILD_TYPE} in
+    webosose)
+        run_webosose
+        ;;
     cleanup)
         run_cleanup
         ;;

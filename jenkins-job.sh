@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.4.4"
+BUILD_SCRIPT_VERSION="2.4.5"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -143,7 +143,7 @@ function parse_job_name {
 }
 
 function set_images {
-    if [ "${BUILD_TYPE}" != "build" ] ; then
+    if [ "${BUILD_TYPE}" != "build" -a "${BUILD_TYPE}" != "webosose" ] ; then
         return
     fi
     if [ "${BUILD_VERSION}" = "webosose" ] ; then

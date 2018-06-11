@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.4.6"
+BUILD_SCRIPT_VERSION="2.4.7"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -485,9 +485,15 @@ function delete_unnecessary_images_webosose {
         qemux86|qemux86-64)
             # keep only vmdk
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}.rootfs.*
+            rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}.hdddirect
+            rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}.qemuboot.conf
+            rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}.vmdk
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}-*.ext3
+            rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}-*.ext4
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}-*.manifest
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}-*.tar.gz
+            rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}-*.qemuboot.conf
+            rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}-*.hdddirect
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/bzImage*
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/modules-*
             ;;

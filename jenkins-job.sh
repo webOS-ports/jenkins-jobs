@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.4.0"
+BUILD_SCRIPT_VERSION="2.4.1"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -189,22 +189,27 @@ function run_build {
 }
 
 function sanity-check {
-    # check that tmpfs is mounted and has enough space
-    if ! mount | grep -q "${BUILD_TOPDIR}/tmp-glibc type tmpfs"; then
-        [ ! -d ${BUILD_TOPDIR}/tmp-glibc ] && mkdir -p ${BUILD_TOPDIR}/tmp-glibc
-        mount ${BUILD_TOPDIR}/tmp-glibc
+    if [ "${BUILD_VERSION}" = "webosose" ] ; then
+        TMPDIR=BUILD
+    else
+        TMPDIR=tmp-glibc
     fi
-    if ! mount | grep -q "${BUILD_TOPDIR}/tmp-glibc type tmpfs"; then
-        echo "ERROR: ${BUILD_SCRIPT_NAME}-${BUILD_SCRIPT_VERSION} tmpfs isn't mounted in ${BUILD_TOPDIR}/tmp-glibc"
+    # check that tmpfs is mounted and has enough space
+    if ! mount | grep -q "${BUILD_TOPDIR}/${TMPDIR} type tmpfs"; then
+        [ ! -d ${BUILD_TOPDIR}/${TMPDIR} ] && mkdir -p ${BUILD_TOPDIR}/${TMPDIR}
+        mount ${BUILD_TOPDIR}/${TMPDIR}
+    fi
+    if ! mount | grep -q "${BUILD_TOPDIR}/${TMPDIR} type tmpfs"; then
+        echo "ERROR: ${BUILD_SCRIPT_NAME}-${BUILD_SCRIPT_VERSION} tmpfs isn't mounted in ${BUILD_TOPDIR}/${TMPDIR}"
         exit 1
     fi
-    local available_tmpfs=`df -BG ${BUILD_TOPDIR}/tmp-glibc | grep ${BUILD_TOPDIR}/tmp-glibc | awk '{print $4}' | sed 's/G$//g'`
+    local available_tmpfs=`df -BG ${BUILD_TOPDIR}/${TMPDIR} | grep ${BUILD_TOPDIR}/${TMPDIR} | awk '{print $4}' | sed 's/G$//g'`
     if [ "${available_tmpfs}" -lt 15 ] ; then
-        echo "ERROR: ${BUILD_SCRIPT_NAME}-${BUILD_SCRIPT_VERSION} tmpfs mounted in ${BUILD_TOPDIR}/tmp-glibc has less than 15G free"
+        echo "ERROR: ${BUILD_SCRIPT_NAME}-${BUILD_SCRIPT_VERSION} tmpfs mounted in ${BUILD_TOPDIR}/${TMPDIR} has less than 15G free"
         exit 1
     fi
     local tmpfs tmpfs_allocated_all=0
-    for tmpfs in `mount | grep "tmp-glibc type tmpfs" | awk '{print $3}'`; do
+    for tmpfs in `mount | grep "${TMPDIR} type tmpfs" | awk '{print $3}'`; do
         df -BG $tmpfs | grep $tmpfs;
         local tmpfs_allocated=`df -BG $tmpfs | grep $tmpfs | awk '{print $3}' | sed 's/G$//g'`
         tmpfs_allocated_all=`expr ${tmpfs_allocated_all} + ${tmpfs_allocated}`
@@ -504,10 +509,21 @@ function kill_stalled_bitbake_processes {
 }
 
 function run_webosose {
+    # don't use webos-ports as a ${BUILD_DIR}
+    BUILD_TOPDIR="${BUILD_WORKSPACE}"
+    BUILD_TIME_LOG=${BUILD_TOPDIR}/time.txt
+
     declare -i RESULT=0
-#    sanity-check
-    ./mcf ${BUILD_MACHINE}
-    ./mcf --command update --clean
+    sanity-check
+    if [ "${BUILD_MACHINE}" = "qemux86" ] ; then
+        # work around the issues in webOS OSE and allow to build for qemux86
+        ./mcf rasbperrypi3
+        ./mcf --command update --clean
+        sed -i 's#PACKAGECONFIG ??= "avoutputd"#PACKAGECONFIG_rpi = "avoutputd"#g' meta-webosose/meta-webos/recipes-webos/umediaserver/umediaserver.bb
+    else
+        ./mcf ${BUILD_MACHINE}
+        ./mcf --command update --clean
+    fi
     . ./oe-init-build-env
     export MACHINE="${BUILD_MACHINE}"
 
@@ -515,7 +531,10 @@ function run_webosose {
         bitbake -k ${BUILD_IMAGES} 2>&1 | tee /dev/stderr | grep '^TIME:' >> ${BUILD_TIME_LOG}
     RESULT+=${PIPESTATUS[0]}
 
-    rsync -avir ${BUILD_TOPDIR}/BUILD/deploy/images/${BUILD_MACHINE}/${BUILD_IMAGES}*              jenkins@milla.nao:~/htdocs/builds/webosose/
+    rsync -avir ${BUILD_TOPDIR}/BUILD/deploy/images/${BUILD_MACHINE}               jenkins@milla.nao:~/htdocs/builds/webosose/${BUILD_MACHINE}/
+    rsync -avir --delete ${BUILD_TOPDIR}/downloads                                 jenkins@milla.nao:~/htdocs/builds/webosose/sources/
+
+    umount ${BUILD_TOPDIR}/BUILD
     exit ${RESULT}
 }
 

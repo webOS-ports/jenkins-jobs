@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.4.5"
+BUILD_SCRIPT_VERSION="2.4.6"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -556,9 +556,9 @@ function run_webosose {
     sanity-check
     if [ "${BUILD_MACHINE}" = "qemux86" ] ; then
         # work around the issues in webOS OSE and allow to build for qemux86
-        sed -i "s#Machines = ['raspberrypi3']#Machines = ['raspberrypi3','qemux86']#g" weboslayers.py
+        sed -i "s#Machines = \['raspberrypi3'\]#Machines = ['raspberrypi3','qemux86']#g" weboslayers.py
     fi
-    ./mcf ${BUILD_MACHINE}
+    ./mcf --enable-generate-mirror-tarballs ${BUILD_MACHINE}
     ./mcf --command update --clean
     if [ "${BUILD_MACHINE}" = "qemux86" ] ; then
         # work around the issues in webOS OSE and allow to build for qemux86

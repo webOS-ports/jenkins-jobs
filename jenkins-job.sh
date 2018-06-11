@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.4.2"
+BUILD_SCRIPT_VERSION="2.4.3"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -479,6 +479,33 @@ function delete_unnecessary_images {
             ;;
     esac
 }
+function delete_unnecessary_images_webosose {
+    rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/README_-_DO_NOT_DELETE_FILES_IN_THIS_DIRECTORY.txt
+    case ${BUILD_MACHINE} in
+        qemux86|qemux86-64)
+            # keep only vmdk
+            rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}.rootfs.*
+            rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}-*.ext3
+            rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}-*.manifest
+            rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}-*.tar.gz
+            rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/bzImage*
+            rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/modules-*
+            ;;
+        raspberrypi3)
+            rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/Image*
+            rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/modules-*
+            rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/bcm2835-bootfiles
+            rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}.rootfs.*
+            rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}-*.ext3
+            rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}-*.manifest
+            rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}-*.tar.gz
+            ;;
+        *)
+            echo "ERROR: ${BUILD_SCRIPT_NAME}-${BUILD_SCRIPT_VERSION} Unrecognized machine: '${BUILD_MACHINE}', script doesn't know which images to build"
+            exit 1
+            ;;
+    esac
+}
 
 function sanity_check_workspace {
     # BUILD_TOPDIR path should contain BUILD_VERSION, otherwise there is probably incorrect WORKSPACE in jenkins config
@@ -534,8 +561,11 @@ function run_webosose {
         bitbake -k ${BUILD_IMAGES} 2>&1 | tee /dev/stderr | grep '^TIME:' >> ${BUILD_TIME_LOG}
     RESULT+=${PIPESTATUS[0]}
 
-    rsync -avir ${BUILD_TOPDIR}/BUILD/deploy/images/${BUILD_MACHINE}               jenkins@milla.nao:~/htdocs/builds/webosose/${BUILD_MACHINE}/
-    rsync -avir --delete ${BUILD_TOPDIR}/downloads                                 jenkins@milla.nao:~/htdocs/builds/webosose/sources/
+    delete_unnecessary_images_webosose
+
+    rsync -avir ${BUILD_TOPDIR}/BUILD/deploy/images/${BUILD_MACHINE}/               jenkins@milla.nao:~/htdocs/builds/webosose/${BUILD_MACHINE}/
+    rsync -avir --no-links --exclude '*.done' --exclude git2 \
+                --exclude svn --exclude bzr ${BUILD_TOPDIR}/downloads/              jenkins@milla.nao:~/htdocs/builds/webosose/sources/
 
     umount ${BUILD_TOPDIR}/BUILD
     exit ${RESULT}

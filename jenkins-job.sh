@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.4.10"
+BUILD_SCRIPT_VERSION="2.4.11"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -594,6 +594,7 @@ function run_webosose {
     rsync -avir --no-links --exclude '*.done' --exclude '*_bad-checksum_*' --exclude git2 \
                 --exclude svn --exclude bzr ${BUILD_TOPDIR}/downloads/              jenkins@milla.nao:~/htdocs/builds/webosose/sources/
 
+    sleep 10 # wait a bit for pseudo processes to finish before trying to umount it
     umount ${BUILD_TOPDIR}/BUILD
     exit ${RESULT}
 }

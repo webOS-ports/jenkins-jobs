@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.4.7"
+BUILD_SCRIPT_VERSION="2.4.8"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -494,7 +494,6 @@ function delete_unnecessary_images_webosose {
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}-*.tar.gz
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}-*.qemuboot.conf
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}-*.hdddirect
-            rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/bzImage*
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/modules-*
             ;;
         raspberrypi3)

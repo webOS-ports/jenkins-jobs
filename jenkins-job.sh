@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.4.9"
+BUILD_SCRIPT_VERSION="2.4.10"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -501,6 +501,9 @@ function delete_unnecessary_images_webosose {
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/modules-*
             ;;
         raspberrypi3)
+            # unfortunately rpi-sdimg.zip in IMAGE_FSTYPES doesn't work, because how the webOS OSE handles the hardlinks in deploy, this will stay a symlink to the file which we remove later
+            for i in BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}-*.rpi-sdimg; do zip -D $i.zip $i; done
+            # keep only rpi-sdimg.zip
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/Image*
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/modules-*
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/bcm2835-bootfiles
@@ -570,9 +573,7 @@ function run_webosose {
     fi
     ./mcf --enable-generate-mirror-tarballs ${BUILD_MACHINE}
     ./mcf --command update --clean
-    echo > webos-local.conf
-    echo 'IMAGE_FSTYPES_qemux86_pn-webos-image = "vmdk vmdk.zip"' >> webos-local.conf
-    echo 'IMAGE_FSTYPES_raspberrypi3_pn-webos-image = "rpi-sdimg.zip"' >> webos-local.conf
+    rm -f webos-local.conf
 
     if [ "${BUILD_MACHINE}" = "qemux86" ] ; then
         # work around the issues in webOS OSE and allow to build for qemux86

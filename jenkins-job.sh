@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.4.11"
+BUILD_SCRIPT_VERSION="2.4.12"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -484,7 +484,7 @@ function delete_unnecessary_images_webosose {
     case ${BUILD_MACHINE} in
         qemux86|qemux86-64)
             # unfortunately vmdk.zip in IMAGE_FSTYPES doesn't work with the old Yocto used by webOS OSE
-            for i in BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}-*.vmdk; do zip -D $i.zip $i; done
+            for i in BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}-*.vmdk; do zip -j $i.zip $i; done
             # keep only vmdk.zip
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}.rootfs.*
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}.hdddirect
@@ -502,7 +502,7 @@ function delete_unnecessary_images_webosose {
             ;;
         raspberrypi3)
             # unfortunately rpi-sdimg.zip in IMAGE_FSTYPES doesn't work, because how the webOS OSE handles the hardlinks in deploy, this will stay a symlink to the file which we remove later
-            for i in BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}-*.rpi-sdimg; do zip -D $i.zip $i; done
+            for i in BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}-*.rpi-sdimg; do zip -j $i.zip $i; done
             # keep only rpi-sdimg.zip
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/Image*
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/modules-*

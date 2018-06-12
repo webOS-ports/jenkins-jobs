@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.4.8"
+BUILD_SCRIPT_VERSION="2.4.9"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -349,7 +349,7 @@ function run_rsync {
     fi
 
     rsync -avir --delete ${BUILD_TOPDIR}/sstate-cache/                jenkins@milla.nao:~/htdocs/builds/luneos-${BUILD_VERSION}/sstate-cache/
-    rsync -avir --no-links --exclude '*.done' --exclude git2 \
+    rsync -avir --no-links --exclude '*.done' --exclude '*_bad-checksum_*' --exclude git2 \
                            --exclude svn --exclude bzr downloads      jenkins@milla.nao:~/htdocs/sources/
 }
 
@@ -483,7 +483,9 @@ function delete_unnecessary_images_webosose {
     rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/README_-_DO_NOT_DELETE_FILES_IN_THIS_DIRECTORY.txt
     case ${BUILD_MACHINE} in
         qemux86|qemux86-64)
-            # keep only vmdk
+            # unfortunately vmdk.zip in IMAGE_FSTYPES doesn't work with the old Yocto used by webOS OSE
+            for i in BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}-*.vmdk; do zip -D $i.zip $i; done
+            # keep only vmdk.zip
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}.rootfs.*
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}.hdddirect
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}.qemuboot.conf
@@ -494,6 +496,8 @@ function delete_unnecessary_images_webosose {
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}-*.tar.gz
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}-*.qemuboot.conf
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}-*.hdddirect
+            rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}-*.vmdk
+            rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/bzImage*
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/modules-*
             ;;
         raspberrypi3)
@@ -504,6 +508,7 @@ function delete_unnecessary_images_webosose {
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}-*.ext3
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}-*.manifest
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}-*.tar.gz
+            rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}-*.rpi-sdimg
             ;;
         *)
             echo "ERROR: ${BUILD_SCRIPT_NAME}-${BUILD_SCRIPT_VERSION} Unrecognized machine: '${BUILD_MACHINE}', script doesn't know which images to build"
@@ -565,6 +570,10 @@ function run_webosose {
     fi
     ./mcf --enable-generate-mirror-tarballs ${BUILD_MACHINE}
     ./mcf --command update --clean
+    echo > webos-local.conf
+    echo 'IMAGE_FSTYPES_qemux86_pn-webos-image = "vmdk vmdk.zip"' >> webos-local.conf
+    echo 'IMAGE_FSTYPES_raspberrypi3_pn-webos-image = "rpi-sdimg.zip"' >> webos-local.conf
+
     if [ "${BUILD_MACHINE}" = "qemux86" ] ; then
         # work around the issues in webOS OSE and allow to build for qemux86
         sed -i 's#PACKAGECONFIG ??= "avoutputd"#PACKAGECONFIG_rpi = "avoutputd"#g' meta-webosose/meta-webos/recipes-webos/umediaserver/umediaserver.bb
@@ -581,7 +590,7 @@ function run_webosose {
     delete_unnecessary_images_webosose
 
     rsync -avir ${BUILD_TOPDIR}/BUILD/deploy/images/${BUILD_MACHINE}/               jenkins@milla.nao:~/htdocs/builds/webosose/${BUILD_MACHINE}/
-    rsync -avir --no-links --exclude '*.done' --exclude git2 \
+    rsync -avir --no-links --exclude '*.done' --exclude '*_bad-checksum_*' --exclude git2 \
                 --exclude svn --exclude bzr ${BUILD_TOPDIR}/downloads/              jenkins@milla.nao:~/htdocs/builds/webosose/sources/
 
     umount ${BUILD_TOPDIR}/BUILD

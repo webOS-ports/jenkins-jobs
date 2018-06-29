@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.4.12"
+BUILD_SCRIPT_VERSION="2.4.13"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -567,20 +567,9 @@ function run_webosose {
 
     declare -i RESULT=0
     sanity-check
-    if [ "${BUILD_MACHINE}" = "qemux86" ] ; then
-        # work around the issues in webOS OSE and allow to build for qemux86
-        sed -i "s#Machines = \['raspberrypi3'\]#Machines = ['raspberrypi3','qemux86']#g" weboslayers.py
-    fi
     ./mcf --enable-generate-mirror-tarballs ${BUILD_MACHINE}
     ./mcf --command update --clean
-    rm -f webos-local.conf
 
-    if [ "${BUILD_MACHINE}" = "qemux86" ] ; then
-        # work around the issues in webOS OSE and allow to build for qemux86
-        sed -i 's#PACKAGECONFIG ??= "avoutputd"#PACKAGECONFIG_rpi = "avoutputd"#g' meta-webosose/meta-webos/recipes-webos/umediaserver/umediaserver.bb
-        # undo the weboslayers.py change so that jenkins github plugin can do clean update in the next build
-        git checkout weboslayers.py
-    fi
     . ./oe-init-build-env
     export MACHINE="${BUILD_MACHINE}"
 

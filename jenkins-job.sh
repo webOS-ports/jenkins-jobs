@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.4.14"
+BUILD_SCRIPT_VERSION="2.4.15"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -68,6 +68,9 @@ function parse_job_name {
         *_mido)
             BUILD_MACHINE="mido"
             ;;
+        *_onyx)
+            BUILD_MACHINE="onyx"
+            ;;
         *_qemuarm)
             BUILD_MACHINE="qemuarm"
             ;;
@@ -108,7 +111,7 @@ function parse_job_name {
             # global job
             ;;
         *)
-            echo "ERROR: ${BUILD_SCRIPT_NAME}-${BUILD_SCRIPT_VERSION} Unrecognized machine in JOB_NAME: '${JOB_NAME}', it should end with '_a500', '_grouper', '_hammerhead', '_maguro', '_mako', '_mido', '_qemuarm', '_qemux86', '_qemux86-64', '_rosy', '_tenderloin', '_tissot', '_raspberrypi2' or '_raspberrypi3' or '_raspberrypi3-64'"
+            echo "ERROR: ${BUILD_SCRIPT_NAME}-${BUILD_SCRIPT_VERSION} Unrecognized machine in JOB_NAME: '${JOB_NAME}', it should end with '_a500', '_grouper', '_hammerhead', '_maguro', '_mako', '_mido', '_onyx', '_qemuarm', '_qemux86', '_qemux86-64', '_rosy', '_tenderloin', '_tissot', '_raspberrypi2' or '_raspberrypi3' or '_raspberrypi3-64'"
             exit 1
             ;;
     esac
@@ -160,7 +163,7 @@ function set_images {
         return
     fi
     case ${BUILD_MACHINE} in
-        grouper|maguro|mako|hammerhead|mido|rosy|tissot)
+        grouper|maguro|mako|hammerhead|mido|onyx|rosy|tissot)
             BUILD_IMAGES="luneos-dev-package"
             ;;
         qemuarm|tenderloin|a500|raspberrypi2|raspberrypi3|raspberrypi3-64)
@@ -453,7 +456,7 @@ function run_release {
 function delete_unnecessary_images {
     rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/README_-_DO_NOT_DELETE_FILES_IN_THIS_DIRECTORY.txt
     case ${BUILD_MACHINE} in
-        grouper|maguro|mako|hammerhead|mido|rosy|tissot)
+        grouper|maguro|mako|hammerhead|mido|onyx|rosy|tissot)
             # keep only *-package.zip
             rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/luneos-image-*
             rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/luneos-dev-image-*

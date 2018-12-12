@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.4.15"
+BUILD_SCRIPT_VERSION="2.4.16"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -362,7 +362,7 @@ function run_rsync {
 
     rsync -avir --delete ${BUILD_TOPDIR}/sstate-cache/                jenkins@milla.nao:~/htdocs/builds/luneos-${BUILD_VERSION}/sstate-cache/
     rsync -avir --no-links --exclude '*.done' --exclude '*_bad-checksum_*' --exclude git2 \
-                           --exclude svn --exclude bzr downloads      jenkins@milla.nao:~/htdocs/sources/
+                           --exclude svn --exclude bzr downloads/      jenkins@milla.nao:~/htdocs/sources/
 }
 
 function run_update-manifest() {

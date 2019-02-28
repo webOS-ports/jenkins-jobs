@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.5.2"
+BUILD_SCRIPT_VERSION="2.5.3"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -581,11 +581,11 @@ halium_build_device() {
         #cp ramdisk-android.img android-ramdisk.img
         #tar cvjf ${ARCHIVE_NAME} system android-ramdisk.img filesystem_config.txt system.img
         tar cvjf ${ARCHIVE_NAME} system.img
-        [[ "${BUILD_VERSION}" = "5.1" ]] && tar cvjf ${DEBUG_ARCHIVE_NAME} symbols/
+        tar cvjf ${DEBUG_ARCHIVE_NAME} symbols/
     cd ${BUILD_DIR}
 
     halium_publish_archive ${OUTPUT_DIR}/${ARCHIVE_NAME}
-    [[ "${BUILD_VERSION}" = "5.1" ]] && halium_publish_archive ${OUTPUT_DIR}/${DEBUG_ARCHIVE_NAME}
+    halium_publish_archive ${OUTPUT_DIR}/${DEBUG_ARCHIVE_NAME}
     halium_generate_checksums ${RESULT_DIR}/${ARCHIVE_NAME}
 
     # package kernel image and modules

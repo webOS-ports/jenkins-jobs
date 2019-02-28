@@ -52,7 +52,7 @@ build_device() {
   source build/envsetup.sh
   
   #For Ubuntu 18.04 we will need to use either of below:
-  #export LC_ALL=C  
+  #export LC_ALL=C
   export USE_HOST_LEX=yes
   
   export USE_CCACHE=1
@@ -61,12 +61,15 @@ build_device() {
   ${BUILD_CMD} ${BUILD_TARGET}
   mka systemimage
   if [ $? != 0 ]; then
-      echo "Build of Halium for $MACHINE failed"
+      echo "Build of Halium ${BUILD_VERSION} for $MACHINE failed"
       exit 1
   fi
 
   # Package result
   cd ${OUTPUT_DIR}
+    #touch filesystem_config.txt
+    #cp ramdisk-android.img android-ramdisk.img
+    #tar cvjf ${ARCHIVE_NAME} system android-ramdisk.img filesystem_config.txt system.img
     tar cvjf ${ARCHIVE_NAME} system.img
     tar cvjf ${DEBUG_ARCHIVE_NAME} symbols/
   cd ${BUILD_DIR}
@@ -86,7 +89,7 @@ build_device() {
   # cleanup previous changes made by halium's device setup
   # again before switching to another device in the next job
   # which will fail to repo sync, because there will be left-over
-  # local changes for hammerhead
+  # local changes from previous jenkins job
   repo forall -vc "git reset --hard"
 }
 

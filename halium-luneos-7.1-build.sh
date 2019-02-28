@@ -46,11 +46,11 @@ build_device() {
   
   cd ${BUILD_DIR}
   
-  # reset any previous patch
+  # cleanup previous changes made by halium's device setup
   repo forall -vc "git reset --hard"
+  # retrieve device's manifest
+  ./halium/devices/setup $MACHINE --force-sync
   
-  ./halium/devices/setup $MACHINE --force-sync  
-
   source build/envsetup.sh
   
   #For Ubuntu 18.04 we will need to use either of below:
@@ -58,6 +58,7 @@ build_device() {
   #export USE_HOST_LEX=yes
   
   export USE_CCACHE=1
+  #make clobber
 
   ${BUILD_CMD} ${BUILD_TARGET}
   mka systemimage
@@ -89,7 +90,7 @@ build_device() {
   # cleanup previous changes made by halium's device setup
   # again before switching to another device in the next job
   # which will fail to repo sync, because there will be left-over
-  # local changes for tissot
+  # local changes from previous jenkins job
   repo forall -vc "git reset --hard"
 }
 

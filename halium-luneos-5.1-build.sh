@@ -1,10 +1,11 @@
 #!/bin/bash
 
-BUILD_DIR=~/halium-luneos-5.1
+BUILD_VERSION="5.1"
+BUILD_DIR=~/halium-luneos-${BUILD_VERSION}
 RESULT_DIR=${BUILD_DIR}/results
 CPU_CORES=6
 BUILD_VERSION="`date +%Y%m%d`-${BUILD_NUMBER}"
-BASE_ARCHIVE_NAME="halium-luneos-5.1-`date +%Y%m%d`-${BUILD_NUMBER}"
+BASE_ARCHIVE_NAME="halium-luneos-${BUILD_VERSION}-`date +%Y%m%d`-${BUILD_NUMBER}"
 
 publish_archive() {
   archive=$1
@@ -21,7 +22,9 @@ generate_checksums() {
 
 build_device() {
   MACHINE=$1
-  LUNCH_TARGET=$2
+  BUILD_TARGET=$2
+  BUILD_CMD=lunch
+  [[ "${BUILD_VERSION}" = "7.1" ]] && BUILD_CMD=breakfast
   OUTPUT_DIR=${BUILD_DIR}/out/target/product/${MACHINE}
   ARCHIVE_NAME="${BASE_ARCHIVE_NAME}-${MACHINE}.tar.bz2"
   DEBUG_ARCHIVE_NAME="${BASE_ARCHIVE_NAME}-${MACHINE}-dbg.tar.bz2"
@@ -55,7 +58,7 @@ build_device() {
   export USE_CCACHE=1
   #make clobber
 
-  lunch ${LUNCH_TARGET}
+  ${BUILD_CMD} ${BUILD_TARGET}
   mka systemimage
   if [ $? != 0 ]; then
       echo "Build of Halium for $MACHINE failed"
@@ -91,7 +94,19 @@ build_device() {
 cd ${BUILD_DIR}
 rm -rf .repo/local_manifests/
 repo status
-repo init --depth=1 -u https://github.com/Halium/android.git -b halium-5.1
+
+if [[ "${BUILD_VERSION}" = "7.1" ]] ; then
+  repo init --depth=1 -u https://github.com/webos-ports/android.git -b luneos-halium-7.1
+  (cd .repo/manifests ; git pull )
+
+  rm .repo/local_manifests/override_halium_device.xml
+  ### tofee: optional step to override Halium/halium-devices, when waiting for a PR merge there
+  ###        see https://gist.github.com/Tofee/409f24ec551932890435602561c49ae7
+  curl https://gist.githubusercontent.com/Tofee/409f24ec551932890435602561c49ae7/raw/a49fe1d45d4c41b2d3c8269a764992e0af7c92ba/override_halium_device.xml -o .repo/local_manifests/override_halium_device.xml
+else
+  repo init --depth=1 -u https://github.com/Halium/android.git -b halium-5.1
+fi
+
 repo sync -j16 --force-sync -d -c
 
 rm -rf ${RESULT_DIR}

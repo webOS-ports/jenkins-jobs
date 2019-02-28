@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.5.0"
+BUILD_SCRIPT_VERSION="2.5.1"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -469,7 +469,7 @@ function run_halium {
     BUILD_DIR=~/halium-luneos-${BUILD_VERSION}
     RESULT_DIR=${BUILD_DIR}/results
     CPU_CORES=6
-    BUILD_VERSION="`date +%Y%m%d`-${BUILD_NUMBER}"
+    HALIUM_BUILD_VERSION="`date +%Y%m%d`-${BUILD_NUMBER}"
     BASE_ARCHIVE_NAME="halium-luneos-${BUILD_VERSION}-`date +%Y%m%d`-${BUILD_NUMBER}"
 
     [[ -d ${BUILD_DIR} ]] || mkdir ${BUILD_DIR}
@@ -534,7 +534,7 @@ halium_build_device() {
 
     echo "==============================================================="
     echo "Machine: ${MACHINE}"
-    echo "Build version: ${BUILD_VERSION}"
+    echo "Build version: ${HALIUM_BUILD_VERSION}"
     echo "Build dir: ${BUILD_DIR}"
     echo "Result dir: ${RESULT_DIR}"
     echo "Output dir: ${OUTPUT_DIR}"
@@ -583,11 +583,11 @@ halium_build_device() {
     halium_generate_checksums ${RESULT_DIR}/${ARCHIVE_NAME}
 
     # package kernel image and modules
-    mkdir -p ${OUTPUT_DIR}/kernel-parts-${BUILD_VERSION}/modules
-    cp ${OUTPUT_DIR}/system/lib/modules/* ${OUTPUT_DIR}/kernel-parts-${BUILD_VERSION}/modules/
-    cp ${OUTPUT_DIR}/obj/KERNEL_OBJ/arch/arm/boot/uImage ${OUTPUT_DIR}/kernel-parts-${BUILD_VERSION}/
-    [[ "${BUILD_VERSION}" = "5.1" ]] || cp ${OUTPUT_DIR}/obj/KERNEL_OBJ/arch/arm64/boot/Image ${OUTPUT_DIR}/kernel-parts-${BUILD_VERSION}/
-    (cd ${OUTPUT_DIR} ; tar cjf ${OUTPUT_DIR}/${KERNEL_PARTS_ARCHIVE_NAME} kernel-parts-${BUILD_VERSION} )
+    mkdir -p ${OUTPUT_DIR}/kernel-parts-${HALIUM_BUILD_VERSION}/modules
+    cp ${OUTPUT_DIR}/system/lib/modules/* ${OUTPUT_DIR}/kernel-parts-${HALIUM_BUILD_VERSION}/modules/
+    cp ${OUTPUT_DIR}/obj/KERNEL_OBJ/arch/arm/boot/uImage ${OUTPUT_DIR}/kernel-parts-${HALIUM_BUILD_VERSION}/
+    [[ "${BUILD_VERSION}" = "5.1" ]] || cp ${OUTPUT_DIR}/obj/KERNEL_OBJ/arch/arm64/boot/Image ${OUTPUT_DIR}/kernel-parts-${HALIUM_BUILD_VERSION}/
+    (cd ${OUTPUT_DIR} ; tar cjf ${OUTPUT_DIR}/${KERNEL_PARTS_ARCHIVE_NAME} kernel-parts-${HALIUM_BUILD_VERSION} )
     halium_publish_archive ${OUTPUT_DIR}/${KERNEL_PARTS_ARCHIVE_NAME}
     halium_generate_checksums ${RESULT_DIR}/${KERNEL_PARTS_ARCHIVE_NAME}
 

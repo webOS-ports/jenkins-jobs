@@ -1,0 +1,104 @@
+#!/bin/bash
+
+BUILD_DIR=~/halium-luneos-5.1
+RESULT_DIR=${BUILD_DIR}/results
+CPU_CORES=6
+BUILD_VERSION="`date +%Y%m%d`-${BUILD_NUMBER}"
+BASE_ARCHIVE_NAME="halium-luneos-5.1-`date +%Y%m%d`-${BUILD_NUMBER}"
+
+publish_archive() {
+  archive=$1
+  echo "Publishing archive '$archive' ..."
+  mv $archive ${RESULT_DIR}
+}
+
+generate_checksums() {
+  file=$1
+  echo "Generating checksums for archive '$file' ..."
+  md5sum $file > $file.md5sum
+  sha256sum $file > $file.sha256sum
+}
+
+build_device() {
+  MACHINE=$1
+  LUNCH_TARGET=$2
+  OUTPUT_DIR=${BUILD_DIR}/out/target/product/${MACHINE}
+  ARCHIVE_NAME="${BASE_ARCHIVE_NAME}-${MACHINE}.tar.bz2"
+  DEBUG_ARCHIVE_NAME="${BASE_ARCHIVE_NAME}-${MACHINE}-dbg.tar.bz2"
+  KERNEL_PARTS_ARCHIVE_NAME="${BASE_ARCHIVE_NAME}-kernel-parts-${MACHINE}.tar.bz2"
+
+  echo "==============================================================="
+  echo "Machine: ${MACHINE}"
+  echo "Build version: ${BUILD_VERSION}"
+  echo "Build dir: ${BUILD_DIR}"
+  echo "Result dir: ${RESULT_DIR}"
+  echo "Output dir: ${OUTPUT_DIR}"
+  echo "Archive name: ${ARCHIVE_NAME}"
+  echo "==============================================================="
+
+  git config --global user.name "Jenkins"
+  git config --global user.email "jenkins@nas-admin.org"
+
+  cd ${BUILD_DIR}
+  
+  # cleanup previous changes made by halium's device setup
+  repo forall -vc "git reset --hard"
+  # retrieve device's manifest
+  ./halium/devices/setup $MACHINE --force-sync
+  
+  source build/envsetup.sh
+  
+  #For Ubuntu 18.04 we will need to use either of below:
+  #export LC_ALL=C  
+  export USE_HOST_LEX=yes
+  
+  export USE_CCACHE=1
+  #make clobber
+
+  lunch ${LUNCH_TARGET}
+  mka systemimage
+  if [ $? != 0 ]; then
+      echo "Build of Halium for $MACHINE failed"
+      exit 1
+  fi
+
+  # Package result
+  cd ${OUTPUT_DIR}
+    tar cvjf ${ARCHIVE_NAME} system.img
+    tar cvjf ${DEBUG_ARCHIVE_NAME} symbols/
+  cd ${BUILD_DIR}
+
+  publish_archive ${OUTPUT_DIR}/${ARCHIVE_NAME}
+  publish_archive ${OUTPUT_DIR}/${DEBUG_ARCHIVE_NAME}
+  generate_checksums ${RESULT_DIR}/${ARCHIVE_NAME}
+
+  # package kernel image and modules
+  mkdir -p ${OUTPUT_DIR}/kernel-parts-${BUILD_VERSION}/modules
+  cp ${OUTPUT_DIR}/system/lib/modules/* ${OUTPUT_DIR}/kernel-parts-${BUILD_VERSION}/modules/
+  cp ${OUTPUT_DIR}/obj/KERNEL_OBJ/arch/arm/boot/uImage ${OUTPUT_DIR}/kernel-parts-${BUILD_VERSION}/
+  (cd ${OUTPUT_DIR} ; tar cjf ${OUTPUT_DIR}/${KERNEL_PARTS_ARCHIVE_NAME} kernel-parts-${BUILD_VERSION} )
+  publish_archive ${OUTPUT_DIR}/${KERNEL_PARTS_ARCHIVE_NAME}
+  generate_checksums ${RESULT_DIR}/${KERNEL_PARTS_ARCHIVE_NAME}
+  
+  # cleanup previous changes made by halium's device setup
+  # again before switching to another device in the next job
+  # which will fail to repo sync, because there will be left-over
+  # local changes for hammerhead
+  repo forall -vc "git reset --hard"
+}
+
+[[ -d ${BUILD_DIR} ]] || mkdir ${BUILD_DIR}
+cd ${BUILD_DIR}
+rm -rf .repo/local_manifests/
+repo status
+repo init --depth=1 -u https://github.com/Halium/android.git -b halium-5.1
+repo sync -j16 --force-sync -d -c
+
+rm -rf ${RESULT_DIR}
+mkdir -p ${RESULT_DIR}
+
+rm -rf ${BUILD_DIR}/out
+
+build_device tenderloin cm_tenderloin-userdebug
+build_device mako aosp_mako-userdebug
+build_device hammerhead aosp_hammerhead-userdebug

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.5.1"
+BUILD_SCRIPT_VERSION="2.5.2"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -474,8 +474,14 @@ function run_halium {
 
     [[ -d ${BUILD_DIR} ]] || mkdir ${BUILD_DIR}
     cd ${BUILD_DIR}
+
     rm -rf .repo/local_manifests/
+    mkdir -p .repo/local_manifests/
+
     repo status
+
+    # reset all git repositories, not only those included in the manifest (where repo forall works fine)
+    for G in `find . -name .git`; do cd `dirname $G`; echo -n "$G: "; git reset --hard; cd - >/dev/null; done
 
     if [[ "${BUILD_VERSION}" = "5.1" ]] ; then
         repo init --depth=1 -u https://github.com/Halium/android.git -b halium-5.1
@@ -680,7 +686,7 @@ function delete_unnecessary_images_webosose {
 function sanity_check_workspace {
     if [ "${BUILD_TYPE}" = "halium" ] ; then
         # known to be insane
-        true
+	mkdir -p ${BUILD_TOPDIR} # just for BUILD_TIME_LOG
     elif [ "${BUILD_VERSION}" = "webosose" ] ; then
         # don't use webos-ports as a ${BUILD_DIR}
         BUILD_TOPDIR="${BUILD_WORKSPACE}"

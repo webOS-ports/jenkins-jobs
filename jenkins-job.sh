@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.4.17"
+BUILD_SCRIPT_VERSION="2.5.3"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -42,6 +42,12 @@ function parse_job_name {
             ;;
         webosose_*)
             BUILD_VERSION="webosose"
+            ;;
+        halium-luneos-5.1-build)
+            BUILD_VERSION="5.1"
+            ;;
+        halium-luneos-7.1-build)
+            BUILD_VERSION="7.1"
             ;;
         *)
             echo "ERROR: ${BUILD_SCRIPT_NAME}-${BUILD_SCRIPT_VERSION} Unrecognized version in JOB_NAME: '${JOB_NAME}', it should start with luneos- and 'stable', 'testing' or 'unstable'"
@@ -110,6 +116,9 @@ function parse_job_name {
         *_release)
             # global job
             ;;
+        halium-luneos-*)
+            # global job
+            ;;
         *)
             echo "ERROR: ${BUILD_SCRIPT_NAME}-${BUILD_SCRIPT_VERSION} Unrecognized machine in JOB_NAME: '${JOB_NAME}', it should end with '_a500', '_grouper', '_hammerhead', '_maguro', '_mako', '_mido', '_onyx', '_qemuarm', '_qemux86', '_qemux86-64', '_rosy', '_tenderloin', '_tissot', '_raspberrypi2' or '_raspberrypi3' or '_raspberrypi3-64'"
             exit 1
@@ -147,6 +156,9 @@ function parse_job_name {
             ;;
         *_release)
             BUILD_TYPE="release"
+            ;;
+        halium-luneos-*)
+            BUILD_TYPE="halium"
             ;;
         *)
             BUILD_TYPE="build"
@@ -453,6 +465,145 @@ function run_release {
     fi
 }
 
+function run_halium {
+    BUILD_DIR=~/halium-luneos-${BUILD_VERSION}
+    RESULT_DIR=${BUILD_DIR}/results
+    CPU_CORES=6
+    HALIUM_BUILD_VERSION="`date +%Y%m%d`-${BUILD_NUMBER}"
+    BASE_ARCHIVE_NAME="halium-luneos-${BUILD_VERSION}-`date +%Y%m%d`-${BUILD_NUMBER}"
+
+    [[ -d ${BUILD_DIR} ]] || mkdir ${BUILD_DIR}
+    cd ${BUILD_DIR}
+
+    rm -rf .repo/local_manifests/
+    mkdir -p .repo/local_manifests/
+
+    repo status
+
+    # reset all git repositories, not only those included in the manifest (where repo forall works fine)
+    for G in `find . -name .git`; do cd `dirname $G`; echo -n "$G: "; git reset --hard; cd - >/dev/null; done
+
+    if [[ "${BUILD_VERSION}" = "5.1" ]] ; then
+        repo init --depth=1 -u https://github.com/Halium/android.git -b halium-5.1
+    else
+        repo init --depth=1 -u https://github.com/webos-ports/android.git -b luneos-halium-7.1
+        (cd .repo/manifests ; git pull )
+
+        rm .repo/local_manifests/override_halium_device.xml
+        ### tofee: optional step to override Halium/halium-devices, when waiting for a PR merge there
+        ###        see https://gist.github.com/Tofee/409f24ec551932890435602561c49ae7
+        curl https://gist.githubusercontent.com/Tofee/409f24ec551932890435602561c49ae7/raw/a49fe1d45d4c41b2d3c8269a764992e0af7c92ba/override_halium_device.xml -o .repo/local_manifests/override_halium_device.xml
+    fi
+
+    repo sync -j16 --force-sync -d -c
+
+    rm -rf ${RESULT_DIR}
+    mkdir -p ${RESULT_DIR}
+
+    rm -rf ${BUILD_DIR}/out
+
+    if [[ "${BUILD_VERSION}" = "5.1" ]] ; then
+        halium_build_device tenderloin cm_tenderloin-userdebug
+        halium_build_device mako aosp_mako-userdebug
+        halium_build_device hammerhead aosp_hammerhead-userdebug
+    else
+        halium_build_device onyx lineage_onyx-userdebug
+        halium_build_device mido lineage_mido-userdebug
+        halium_build_device rosy lineage_rosy-userdebug
+        halium_build_device athene lineage_athene-userdebug
+        halium_build_device tissot lineage_tissot-userdebug
+    fi
+}
+
+halium_publish_archive() {
+    archive=$1
+    echo "Publishing archive '$archive' ..."
+    mv $archive ${RESULT_DIR}
+}
+
+halium_generate_checksums() {
+    file=$1
+    echo "Generating checksums for archive '$file' ..."
+    md5sum $file > $file.md5sum
+    sha256sum $file > $file.sha256sum
+}
+
+halium_build_device() {
+    MACHINE=$1
+    BUILD_TARGET=$2
+    BUILD_CMD=lunch
+    [[ "${BUILD_VERSION}" = "7.1" ]] && BUILD_CMD=breakfast
+    OUTPUT_DIR=${BUILD_DIR}/out/target/product/${MACHINE}
+    ARCHIVE_NAME="${BASE_ARCHIVE_NAME}-${MACHINE}.tar.bz2"
+    DEBUG_ARCHIVE_NAME="${BASE_ARCHIVE_NAME}-${MACHINE}-dbg.tar.bz2"
+    KERNEL_PARTS_ARCHIVE_NAME="${BASE_ARCHIVE_NAME}-kernel-parts-${MACHINE}.tar.bz2"
+
+    echo "==============================================================="
+    echo "Machine: ${MACHINE}"
+    echo "Build version: ${HALIUM_BUILD_VERSION}"
+    echo "Build dir: ${BUILD_DIR}"
+    echo "Result dir: ${RESULT_DIR}"
+    echo "Output dir: ${OUTPUT_DIR}"
+    echo "Archive name: ${ARCHIVE_NAME}"
+    echo "==============================================================="
+
+    git config --global user.name "Jenkins"
+    git config --global user.email "jenkins@nas-admin.org"
+
+    [[ "${BUILD_VERSION}" = "5.1" ]] || mkdir -p ${BUILD_DIR}/out/host/linux-x86/framework/
+
+    cd ${BUILD_DIR}
+
+    # cleanup previous changes made by halium's device setup
+    repo forall -vc "git reset --hard"
+    # retrieve device's manifest
+    ./halium/devices/setup $MACHINE --force-sync
+
+    source build/envsetup.sh
+
+    #For Ubuntu 18.04 we will need to use either of below:
+    [[ "${BUILD_VERSION}" = "5.1" ]] || export LC_ALL=C
+    [[ "${BUILD_VERSION}" = "5.1" ]] && export USE_HOST_LEX=yes
+
+    export USE_CCACHE=1
+    #make clobber
+
+    ${BUILD_CMD} ${BUILD_TARGET}
+    mka systemimage
+    if [ $? != 0 ]; then
+        echo "Build of Halium ${BUILD_VERSION} for $MACHINE failed"
+        exit 1
+    fi
+
+    # Package result
+    cd ${OUTPUT_DIR}
+        #touch filesystem_config.txt
+        #cp ramdisk-android.img android-ramdisk.img
+        #tar cvjf ${ARCHIVE_NAME} system android-ramdisk.img filesystem_config.txt system.img
+        tar cvjf ${ARCHIVE_NAME} system.img
+        tar cvjf ${DEBUG_ARCHIVE_NAME} symbols/
+    cd ${BUILD_DIR}
+
+    halium_publish_archive ${OUTPUT_DIR}/${ARCHIVE_NAME}
+    halium_publish_archive ${OUTPUT_DIR}/${DEBUG_ARCHIVE_NAME}
+    halium_generate_checksums ${RESULT_DIR}/${ARCHIVE_NAME}
+
+    # package kernel image and modules
+    mkdir -p ${OUTPUT_DIR}/kernel-parts-${HALIUM_BUILD_VERSION}/modules
+    cp ${OUTPUT_DIR}/system/lib/modules/* ${OUTPUT_DIR}/kernel-parts-${HALIUM_BUILD_VERSION}/modules/
+    cp ${OUTPUT_DIR}/obj/KERNEL_OBJ/arch/arm/boot/uImage ${OUTPUT_DIR}/kernel-parts-${HALIUM_BUILD_VERSION}/
+    [[ "${BUILD_VERSION}" = "5.1" ]] || cp ${OUTPUT_DIR}/obj/KERNEL_OBJ/arch/arm64/boot/Image ${OUTPUT_DIR}/kernel-parts-${HALIUM_BUILD_VERSION}/
+    (cd ${OUTPUT_DIR} ; tar cjf ${OUTPUT_DIR}/${KERNEL_PARTS_ARCHIVE_NAME} kernel-parts-${HALIUM_BUILD_VERSION} )
+    halium_publish_archive ${OUTPUT_DIR}/${KERNEL_PARTS_ARCHIVE_NAME}
+    halium_generate_checksums ${RESULT_DIR}/${KERNEL_PARTS_ARCHIVE_NAME}
+
+    # cleanup previous changes made by halium's device setup
+    # again before switching to another device in the next job
+    # which will fail to repo sync, because there will be left-over
+    # local changes from previous jenkins job
+    repo forall -vc "git reset --hard"
+}
+
 function delete_unnecessary_images {
     rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/README_-_DO_NOT_DELETE_FILES_IN_THIS_DIRECTORY.txt
     case ${BUILD_MACHINE} in
@@ -533,7 +684,10 @@ function delete_unnecessary_images_webosose {
 }
 
 function sanity_check_workspace {
-    if [ "${BUILD_VERSION}" = "webosose" ] ; then
+    if [ "${BUILD_TYPE}" = "halium" ] ; then
+        # known to be insane
+	mkdir -p ${BUILD_TOPDIR} # just for BUILD_TIME_LOG
+    elif [ "${BUILD_VERSION}" = "webosose" ] ; then
         # don't use webos-ports as a ${BUILD_DIR}
         BUILD_TOPDIR="${BUILD_WORKSPACE}"
         BUILD_TIME_LOG=${BUILD_TOPDIR}/time.txt
@@ -645,6 +799,9 @@ case ${BUILD_TYPE} in
         ;;
     update-manifest)
         run_update-manifest
+        ;;
+    halium)
+        run_halium
         ;;
     *)
         echo "ERROR: ${BUILD_SCRIPT_NAME}-${BUILD_SCRIPT_VERSION} Unrecognized build type: '${BUILD_TYPE}', script doesn't know how to execute such job"

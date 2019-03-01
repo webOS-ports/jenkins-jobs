@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.5.5"
+BUILD_SCRIPT_VERSION="2.5.6"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -384,8 +384,8 @@ function run_rsync {
 }
 
 function run_halium-rsync {
-    [[ -d ~/halium-luneos-5.1/results/ ]] && rsync -avir ~/halium-luneos-5.1/results/ jenkins@milla.nas-admin.org:~/htdocs/builds/halium-luneos-5.1/
-    [[ -d ~/halium-luneos-7.1/results/ ]] && rsync -avir ~/halium-luneos-7.1/results/ jenkins@milla.nas-admin.org:~/htdocs/builds/halium-luneos-7.1/
+    [[ -d ${BUILD_WORKSPACE}/../halium-luneos-5.1/results/ ]] && rsync -avir ${BUILD_WORKSPACE}/../halium-luneos-5.1/results/ jenkins@milla.nas-admin.org:~/htdocs/builds/halium-luneos-5.1/
+    [[ -d ${BUILD_WORKSPACE}/../halium-luneos-7.1/results/ ]] && rsync -avir ${BUILD_WORKSPACE}/../halium-luneos-7.1/results/ jenkins@milla.nas-admin.org:~/htdocs/builds/halium-luneos-7.1/
 }
 
 function run_update-manifest() {
@@ -477,7 +477,7 @@ function run_release {
 }
 
 function run_halium {
-    BUILD_DIR=~/halium-luneos-${BUILD_VERSION}
+    BUILD_DIR=${BUILD_WORKSPACE}/halium-luneos-${BUILD_VERSION}
     RESULT_DIR=${BUILD_DIR}/results
     CPU_CORES=6
     HALIUM_BUILD_VERSION="`date +%Y%m%d`-${BUILD_NUMBER}"

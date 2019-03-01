@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.5.3"
+BUILD_SCRIPT_VERSION="2.5.4"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -48,6 +48,9 @@ function parse_job_name {
             ;;
         halium-luneos-7.1-build)
             BUILD_VERSION="7.1"
+            ;;
+        halium-luneos-*-rsync)
+            BUILD_VERSION="all"
             ;;
         *)
             echo "ERROR: ${BUILD_SCRIPT_NAME}-${BUILD_SCRIPT_VERSION} Unrecognized version in JOB_NAME: '${JOB_NAME}', it should start with luneos- and 'stable', 'testing' or 'unstable'"
@@ -159,6 +162,9 @@ function parse_job_name {
             ;;
         halium-luneos-*)
             BUILD_TYPE="halium"
+            ;;
+        halium-luneos-rsync)
+            BUILD_TYPE="halium-rsync"
             ;;
         *)
             BUILD_TYPE="build"
@@ -375,6 +381,11 @@ function run_rsync {
     rsync -avir --delete ${BUILD_TOPDIR}/sstate-cache/                jenkins@milla.nao:~/htdocs/builds/luneos-${BUILD_VERSION}/sstate-cache/
     rsync -avir --no-links --exclude '*.done' --exclude '*_bad-checksum_*' --exclude git2 \
                            --exclude svn --exclude bzr downloads/      jenkins@milla.nao:~/htdocs/sources/
+}
+
+function run_halium-rsync {
+    [[ -d ~/halium-luneos-5.1/results/ ]] && rsync -avir ~/halium-luneos-5.1/results/ jenkins@milla.nas-admin.org:~/htdocs/builds/halium-luneos-5.1/
+    [[ -d ~/halium-luneos-7.1/results/ ]] && rsync -avir ~/halium-luneos-7.1/results/ jenkins@milla.nas-admin.org:~/htdocs/builds/halium-luneos-7.1/
 }
 
 function run_update-manifest() {
@@ -684,7 +695,7 @@ function delete_unnecessary_images_webosose {
 }
 
 function sanity_check_workspace {
-    if [ "${BUILD_TYPE}" = "halium" ] ; then
+    if [ "${BUILD_TYPE}" = "halium" -o "${BUILD_TYPE}" = "halium-rsync" ] ; then
         # known to be insane
 	mkdir -p ${BUILD_TOPDIR} # just for BUILD_TIME_LOG
     elif [ "${BUILD_VERSION}" = "webosose" ] ; then
@@ -802,6 +813,9 @@ case ${BUILD_TYPE} in
         ;;
     halium)
         run_halium
+        ;;
+    halium-rsync)
+        run_halium-rsync
         ;;
     *)
         echo "ERROR: ${BUILD_SCRIPT_NAME}-${BUILD_SCRIPT_VERSION} Unrecognized build type: '${BUILD_TYPE}', script doesn't know how to execute such job"

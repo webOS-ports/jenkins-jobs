@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.5.5"
+BUILD_SCRIPT_VERSION="2.5.7"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -384,8 +384,8 @@ function run_rsync {
 }
 
 function run_halium-rsync {
-    [[ -d ~/halium-luneos-5.1/results/ ]] && rsync -avir ~/halium-luneos-5.1/results/ jenkins@milla.nas-admin.org:~/htdocs/builds/halium-luneos-5.1/
-    [[ -d ~/halium-luneos-7.1/results/ ]] && rsync -avir ~/halium-luneos-7.1/results/ jenkins@milla.nas-admin.org:~/htdocs/builds/halium-luneos-7.1/
+    [[ -d ${BUILD_WORKSPACE}/../halium-luneos-5.1/results/ ]] && rsync -avir ${BUILD_WORKSPACE}/../halium-luneos-5.1/results/ jenkins@milla.nas-admin.org:~/htdocs/builds/halium-luneos-5.1/
+    [[ -d ${BUILD_WORKSPACE}/../halium-luneos-7.1/results/ ]] && rsync -avir ${BUILD_WORKSPACE}/../halium-luneos-7.1/results/ jenkins@milla.nas-admin.org:~/htdocs/builds/halium-luneos-7.1/
 }
 
 function run_update-manifest() {
@@ -477,7 +477,7 @@ function run_release {
 }
 
 function run_halium {
-    BUILD_DIR=~/halium-luneos-${BUILD_VERSION}
+    BUILD_DIR=${BUILD_WORKSPACE}/halium-luneos-${BUILD_VERSION}
     RESULT_DIR=${BUILD_DIR}/results
     CPU_CORES=6
     HALIUM_BUILD_VERSION="`date +%Y%m%d`-${BUILD_NUMBER}"
@@ -499,11 +499,6 @@ function run_halium {
     else
         repo init --depth=1 -u https://github.com/webos-ports/android.git -b luneos-halium-7.1
         (cd .repo/manifests ; git pull )
-
-        rm .repo/local_manifests/override_halium_device.xml
-        ### tofee: optional step to override Halium/halium-devices, when waiting for a PR merge there
-        ###        see https://gist.github.com/Tofee/409f24ec551932890435602561c49ae7
-        curl https://gist.githubusercontent.com/Tofee/409f24ec551932890435602561c49ae7/raw/a49fe1d45d4c41b2d3c8269a764992e0af7c92ba/override_halium_device.xml -o .repo/local_manifests/override_halium_device.xml
     fi
 
     repo sync -j16 --force-sync -d -c

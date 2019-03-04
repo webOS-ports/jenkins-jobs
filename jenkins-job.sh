@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.5.7"
+BUILD_SCRIPT_VERSION="2.5.8"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -516,7 +516,6 @@ function run_halium {
         halium_build_device onyx lineage_onyx-userdebug
         halium_build_device mido lineage_mido-userdebug
         halium_build_device rosy lineage_rosy-userdebug
-        halium_build_device athene lineage_athene-userdebug
         halium_build_device tissot lineage_tissot-userdebug
     fi
 }

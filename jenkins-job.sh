@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.5.8"
+BUILD_SCRIPT_VERSION="2.5.9"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -347,13 +347,8 @@ function run_prepare {
     echo "BUILDHISTORY_PUSH_REPO ?= \"origin luneos-${BUILD_VERSION}\"" >> ${BUILD_TOPDIR}/conf/local.conf
 
     echo 'IMAGE_FSTYPES_forcevariable = "tar.gz"' >> ${BUILD_TOPDIR}/conf/local.conf
-    if [ "${BUILD_VERSION}" = "unstable" ] ; then
-      echo 'IMAGE_FSTYPES_forcevariable_qemux86 = "tar.gz wic.vmdk"' >> ${BUILD_TOPDIR}/conf/local.conf
-      echo 'IMAGE_FSTYPES_forcevariable_qemux86-64 = "tar.gz wic.vmdk"' >> ${BUILD_TOPDIR}/conf/local.conf
-    else
-      echo 'IMAGE_FSTYPES_forcevariable_qemux86 = "tar.gz vmdk"' >> ${BUILD_TOPDIR}/conf/local.conf
-      echo 'IMAGE_FSTYPES_forcevariable_qemux86-64 = "tar.gz vmdk"' >> ${BUILD_TOPDIR}/conf/local.conf
-    fi
+    echo 'IMAGE_FSTYPES_forcevariable_qemux86 = "tar.gz wic.vmdk"' >> ${BUILD_TOPDIR}/conf/local.conf
+    echo 'IMAGE_FSTYPES_forcevariable_qemux86-64 = "tar.gz wic.vmdk"' >> ${BUILD_TOPDIR}/conf/local.conf
     echo 'IMAGE_FSTYPES_forcevariable_raspberrypi2 = "rpi-sdimg"' >> ${BUILD_TOPDIR}/conf/local.conf
     echo 'IMAGE_FSTYPES_forcevariable_raspberrypi3 = "rpi-sdimg"' >> ${BUILD_TOPDIR}/conf/local.conf
     echo 'IMAGE_FSTYPES_forcevariable_raspberrypi3-64 = "rpi-sdimg"' >> ${BUILD_TOPDIR}/conf/local.conf

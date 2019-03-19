@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.5.9"
+BUILD_SCRIPT_VERSION="2.5.10"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -133,6 +133,9 @@ function parse_job_name {
         return
     fi
     case ${JOB_NAME} in
+        *_workspace-sstate-cleanup)
+            BUILD_TYPE="sstate-cleanup"
+            ;;
         *_workspace-cleanup)
             BUILD_TYPE="cleanup"
             ;;
@@ -255,6 +258,17 @@ function sanity-check {
 function run_cleanup {
     if [ -d ${BUILD_TOPDIR} ] ; then
         cd ${BUILD_TOPDIR};
+        mkdir old || true
+        umount tmp-glibc || true
+        mv -f cache/bb_codeparser.dat* bitbake.lock pseudodone tmp-glibc* old || true
+        rm -rf old
+    fi
+    echo "Cleanup finished"
+}
+
+function run_sstate-cleanup {
+    if [ -d ${BUILD_TOPDIR} ] ; then
+        cd ${BUILD_TOPDIR};
         ARCHS="armv7a-vfp-neon,armv5e,i586,arm,armv7a-neon,cortexa7hf-neon-vfpv4,armv7ahf-neon,core2-64,aarch64,cortexa7t2hf-neon-vfpv4,armv7at2hf-neon"
         DU1=`du -hs sstate-cache/`
         echo "$DU1"
@@ -264,11 +278,6 @@ function run_cleanup {
         DU2=`du -hs sstate-cache/`
         echo "$DU2"
         ARCHIVES2=`sh -c "${OPENSSL}"`; echo "number of openssl archives: `echo "$ARCHIVES2" | wc -l`"; echo "$ARCHIVES2"
-
-        mkdir old || true
-        umount tmp-glibc || true
-        mv -f cache/bb_codeparser.dat* bitbake.lock pseudodone tmp-glibc* old || true
-        rm -rf old
 
         echo "BEFORE:"
         echo "number of openssl archives: `echo "$ARCHIVES1" | wc -l`"; echo "$ARCHIVES1"
@@ -769,6 +778,9 @@ ulimit -m 15728640
 case ${BUILD_TYPE} in
     webosose)
         run_webosose
+        ;;
+    sstate-cleanup)
+        run_sstate-cleanup
         ;;
     cleanup)
         run_cleanup

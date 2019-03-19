@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.5.11"
+BUILD_SCRIPT_VERSION="2.5.12"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -31,25 +31,25 @@ function print_timestamp {
 
 function parse_job_name {
     case ${JOB_NAME} in
-        luneos-stable_*)
+        LuneOS/luneos-stable_*)
             BUILD_VERSION="stable"
             ;;
-        luneos-testing_*)
+        LuneOS/luneos-testing_*)
             BUILD_VERSION="testing"
             ;;
-        luneos-unstable_*)
+        LuneOS/luneos-unstable_*)
             BUILD_VERSION="unstable"
             ;;
         webosose_*)
             BUILD_VERSION="webosose"
             ;;
-        halium-luneos-5.1-build)
+        LuneOS/halium-luneos-5.1-build)
             BUILD_VERSION="5.1"
             ;;
-        halium-luneos-7.1-build)
+        LuneOS/halium-luneos-7.1-build)
             BUILD_VERSION="7.1"
             ;;
-        halium-luneos-rsync)
+        LuneOS/halium-luneos-rsync)
             BUILD_VERSION="all"
             ;;
         *)

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.5.12"
+BUILD_SCRIPT_VERSION="2.5.13"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -622,12 +622,16 @@ function delete_unnecessary_images {
             rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/luneos-image-*
             rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/luneos-dev-image-*
             rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/zImage*
+            rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/Image.gz*
             rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/modules-*
             rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/initramfs*
             ;;
         qemuarm|tenderloin|a500)
-            # keep zImage and rootfs.tar.gz
+            # keep uImage and rootfs.tar.gz
             rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/initramfs*
+            rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/modules-*
+            rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/*testdata.json
+            rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/*.manifest
             ;;
         qemux86|qemux86-64)
             # keep only image.zip
@@ -635,16 +639,25 @@ function delete_unnecessary_images {
             rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/luneos-dev-image-*
             rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/bzImage*
             rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/modules-*
+            rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/grub-efi-bootx64.efi
+            rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/grub-efi-bootia32.efi
+            rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/systemd-bootx64.efi
+            rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/systemd-bootia32.efi
             ;;
         raspberrypi2|raspberrypi3|raspberrypi3-64)
             # keep only luneos-dev-image-raspberrypiX.rpi-sdimg
             rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/luneos-image-*.tar.gz
             rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/luneos-image-*.ext3
-            rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/luneos-image-*.manifest
             rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/luneos-dev-image-*.tar.gz
             rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/luneos-dev-image-*.ext3
-            rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/luneos-dev-image-*.manifest
+            rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/*.manifest
             rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/modules-*
+            rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/zImage*
+            rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/Image*
+            rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/bcm2835-bootfiles
+            rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/*testdata.json
+            rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/*.dtbo
+            rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/*.dtb
             ;;
         *)
             echo "ERROR: ${BUILD_SCRIPT_NAME}-${BUILD_SCRIPT_VERSION} Unrecognized machine: '${BUILD_MACHINE}', script doesn't know which images to build"

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.5.13"
+BUILD_SCRIPT_VERSION="2.5.14"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -217,7 +217,6 @@ function run_build {
     /usr/bin/time -f "${BUILD_TIME_STR}" \
         bitbake -k ${BUILD_IMAGES} 2>&1 | tee /dev/stderr | grep '^TIME:' >> ${BUILD_TIME_LOG}
     RESULT+=${PIPESTATUS[0]}
-    delete_unnecessary_images
     exit ${RESULT}
 }
 
@@ -377,6 +376,8 @@ EOF
 }
 
 function run_rsync {
+    delete_unnecessary_images
+
     if [ "${BUILD_VERSION}" = "stable" ] ; then
         scripts/staging_sync.sh ${BUILD_TOPDIR}/tmp-glibc/deploy      jenkins@milla.nao:~/htdocs/builds/luneos-${BUILD_VERSION}-staging/wip
     else
@@ -615,55 +616,63 @@ halium_build_device() {
 }
 
 function delete_unnecessary_images {
-    rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/README_-_DO_NOT_DELETE_FILES_IN_THIS_DIRECTORY.txt
-    case ${BUILD_MACHINE} in
-        grouper|maguro|mako|hammerhead|mido|onyx|rosy|tissot)
-            # keep only *-package.zip
-            rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/luneos-image-*
-            rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/luneos-dev-image-*
-            rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/zImage*
-            rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/Image.gz*
-            rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/modules-*
-            rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/initramfs*
-            ;;
-        qemuarm|tenderloin|a500)
-            # keep uImage and rootfs.tar.gz
-            rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/initramfs*
-            rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/modules-*
-            rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/*testdata.json
-            rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/*.manifest
-            ;;
-        qemux86|qemux86-64)
-            # keep only image.zip
-            rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/luneos-image-*
-            rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/luneos-dev-image-*
-            rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/bzImage*
-            rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/modules-*
-            rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/grub-efi-bootx64.efi
-            rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/grub-efi-bootia32.efi
-            rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/systemd-bootx64.efi
-            rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/systemd-bootia32.efi
-            ;;
-        raspberrypi2|raspberrypi3|raspberrypi3-64)
-            # keep only luneos-dev-image-raspberrypiX.rpi-sdimg
-            rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/luneos-image-*.tar.gz
-            rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/luneos-image-*.ext3
-            rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/luneos-dev-image-*.tar.gz
-            rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/luneos-dev-image-*.ext3
-            rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/*.manifest
-            rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/modules-*
-            rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/zImage*
-            rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/Image*
-            rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/bcm2835-bootfiles
-            rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/*testdata.json
-            rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/*.dtbo
-            rm -rfv tmp-glibc/deploy/images/${BUILD_MACHINE}/*.dtb
-            ;;
-        *)
-            echo "ERROR: ${BUILD_SCRIPT_NAME}-${BUILD_SCRIPT_VERSION} Unrecognized machine: '${BUILD_MACHINE}', script doesn't know which images to build"
-            exit 1
-            ;;
-    esac
+    MACHINES=`ls ${BUILD_TOPDIR}/tmp-glibc/deploy/images/`
+    if [ -z "${MACHINES}" ] ; then
+        echo "No MACHINEs with built images in ${BUILD_TOPDIR}/tmp-glibc/deploy/images/"
+        return
+    fi
+
+    for M in ${MACHINES}; do
+        rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/README_-_DO_NOT_DELETE_FILES_IN_THIS_DIRECTORY.txt
+        case ${M} in
+            grouper|maguro|mako|hammerhead|mido|onyx|rosy|tissot)
+                # keep only *-package.zip
+                rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/luneos-image-*
+                rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/luneos-dev-image-*
+                rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/zImage*
+                rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/Image.gz*
+                rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/modules-*
+                rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/initramfs*
+                ;;
+            qemuarm|tenderloin|a500)
+                # keep uImage and rootfs.tar.gz
+                rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/initramfs*
+                rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/modules-*
+                rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/*testdata.json
+                rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/*.manifest
+                ;;
+            qemux86|qemux86-64)
+                # keep only image.zip
+                rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/luneos-image-*
+                rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/luneos-dev-image-*
+                rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/bzImage*
+                rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/modules-*
+                rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/grub-efi-bootx64.efi
+                rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/grub-efi-bootia32.efi
+                rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/systemd-bootx64.efi
+                rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/systemd-bootia32.efi
+                ;;
+            raspberrypi2|raspberrypi3|raspberrypi3-64)
+                # keep only luneos-dev-image-raspberrypiX.rpi-sdimg
+                rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/luneos-image-*.tar.gz
+                rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/luneos-image-*.ext3
+                rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/luneos-dev-image-*.tar.gz
+                rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/luneos-dev-image-*.ext3
+                rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/*.manifest
+                rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/modules-*
+                rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/zImage*
+                rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/Image*
+                rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/bcm2835-bootfiles
+                rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/*testdata.json
+                rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/*.dtbo
+                rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/*.dtb
+                ;;
+            *)
+                echo "ERROR: ${BUILD_SCRIPT_NAME}-${BUILD_SCRIPT_VERSION} Unrecognized machine: '${M}', script doesn't know which images to delete"
+                exit 1
+                ;;
+         esac
+ done
 }
 function delete_unnecessary_images_webosose {
     rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/README_-_DO_NOT_DELETE_FILES_IN_THIS_DIRECTORY.txt
@@ -709,7 +718,7 @@ function delete_unnecessary_images_webosose {
 function sanity_check_workspace {
     if [ "${BUILD_TYPE}" = "halium" -o "${BUILD_TYPE}" = "halium-rsync" ] ; then
         # known to be insane
-	mkdir -p ${BUILD_TOPDIR} # just for BUILD_TIME_LOG
+        mkdir -p ${BUILD_TOPDIR} # just for BUILD_TIME_LOG
     elif [ "${BUILD_VERSION}" = "webosose" ] ; then
         # don't use webos-ports as a ${BUILD_DIR}
         BUILD_TOPDIR="${BUILD_WORKSPACE}"

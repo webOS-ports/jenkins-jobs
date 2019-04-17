@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.5.14"
+BUILD_SCRIPT_VERSION="2.5.15"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -292,10 +292,13 @@ function run_compare-signatures {
     . ./setup-env
     openembedded-core/scripts/sstate-diff-machines.sh --targets=luneos-dev-image --tmpdir=tmp-glibc/ --analyze --machines="hammerhead mako qemux86" | tee log.compare-signatures
     openembedded-core/scripts/sstate-diff-machines.sh --targets=luneos-dev-image --tmpdir=tmp-glibc/ --analyze --machines="raspberrypi2 raspberrypi3 mako" | tee -a log.compare-signatures
+    openembedded-core/scripts/sstate-diff-machines.sh --targets=luneos-dev-image --tmpdir=tmp-glibc/ --analyze --machines="tissot mido raspberrypi3-64" | tee -a log.compare-signatures
     if [ ! -d sstate-diff-${BUILD_NUMBER} ]; then mkdir sstate-diff-${BUILD_NUMBER}; fi
     mv tmp-glibc/sstate-diff/* sstate-diff-${BUILD_NUMBER}
     mv log.compare-signatures sstate-diff-${BUILD_NUMBER}
-    tar cjvf sstate-diff-${BUILD_NUMBER}.tar.bz2 sstate-diff-${BUILD_NUMBER}
+    tar cjf sstate-diff-${BUILD_NUMBER}.tar.bz2 sstate-diff-${BUILD_NUMBER}
+    # it's a lot of small files, get rid of it
+    rm -rf sstate-diff-${BUILD_NUMBER}
 
     rsync -avir sstate-diff-${BUILD_NUMBER}.tar.bz2 jenkins@milla.nao:~/htdocs/builds/luneos-${BUILD_VERSION}/
 }

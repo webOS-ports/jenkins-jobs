@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.5.15"
+BUILD_SCRIPT_VERSION="2.5.16"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -268,7 +268,8 @@ function run_cleanup {
 function run_sstate-cleanup {
     if [ -d ${BUILD_TOPDIR} ] ; then
         cd ${BUILD_TOPDIR};
-        ARCHS="armv7a-vfp-neon,armv5e,i586,arm,armv7a-neon,cortexa7hf-neon-vfpv4,armv7ahf-neon,core2-64,aarch64,cortexa7t2hf-neon-vfpv4,armv7at2hf-neon"
+        # find sstate-cache/ ! -type d  | sed 's/.*sstate:[^:]*://g' | sed 's/-webos-linux.*$//g' | grep -v ^: | grep -v ^x86_64-linux: | sort -u  | xargs  | sed 's/ /,/g'
+        ARCHS="aarch64,aarch64-cortexa53,all,core2-64,cortexa7hf-neon-vfpv4,cortexa7t2hf-neon-vfpv4,cortexa8hf-neon,cortexa8t2hf-neon,hammerhead,i586,qemux86,qemux86_64,raspberrypi3,raspberrypi3_64,tenderloin,tissot,x86_64"
         DU1=`du -hs sstate-cache/`
         echo "$DU1"
         OPENSSL="find sstate-cache/ -name '*:openssl:*populate_sysroot*tgz'"

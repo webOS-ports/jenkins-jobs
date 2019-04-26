@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.5.16"
+BUILD_SCRIPT_VERSION="2.5.17"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -644,6 +644,9 @@ function delete_unnecessary_images {
                 rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/modules-*
                 rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/*testdata.json
                 rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/*.manifest
+                rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/luneos-dev-image-${M}.tar.gz
+                rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/uImage-${M}.bin
+                rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/uImage
                 ;;
             qemux86|qemux86-64)
                 # keep only image.zip
@@ -662,6 +665,7 @@ function delete_unnecessary_images {
                 rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/luneos-image-*.ext3
                 rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/luneos-dev-image-*.tar.gz
                 rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/luneos-dev-image-*.ext3
+                rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/luneos-dev-image-${M}.rpi-sdimg
                 rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/*.manifest
                 rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/modules-*
                 rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/zImage*

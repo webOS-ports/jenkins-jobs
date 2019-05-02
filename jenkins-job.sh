@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.5.17"
+BUILD_SCRIPT_VERSION="2.5.18"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -80,6 +80,9 @@ function parse_job_name {
         *_onyx)
             BUILD_MACHINE="onyx"
             ;;
+        *_pinephone)
+            BUILD_MACHINE="pinephone"
+            ;;
         *_qemuarm)
             BUILD_MACHINE="qemuarm"
             ;;
@@ -123,7 +126,7 @@ function parse_job_name {
             # global job
             ;;
         *)
-            echo "ERROR: ${BUILD_SCRIPT_NAME}-${BUILD_SCRIPT_VERSION} Unrecognized machine in JOB_NAME: '${JOB_NAME}', it should end with '_a500', '_grouper', '_hammerhead', '_maguro', '_mako', '_mido', '_onyx', '_qemuarm', '_qemux86', '_qemux86-64', '_rosy', '_tenderloin', '_tissot', '_raspberrypi2' or '_raspberrypi3' or '_raspberrypi3-64'"
+            echo "ERROR: ${BUILD_SCRIPT_NAME}-${BUILD_SCRIPT_VERSION} Unrecognized machine in JOB_NAME: '${JOB_NAME}', it should end with '_a500', '_grouper', '_hammerhead', '_maguro', '_mako', '_mido', '_onyx', '_pinephone', '_qemuarm', '_qemux86', '_qemux86-64', '_rosy', '_tenderloin', '_tissot', '_raspberrypi2' or '_raspberrypi3' or '_raspberrypi3-64'"
             exit 1
             ;;
     esac
@@ -187,7 +190,7 @@ function set_images {
         grouper|maguro|mako|hammerhead|mido|onyx|rosy|tissot)
             BUILD_IMAGES="luneos-dev-package"
             ;;
-        qemuarm|tenderloin|a500|raspberrypi2|raspberrypi3|raspberrypi3-64)
+        qemuarm|tenderloin|a500|pinephone|raspberrypi2|raspberrypi3|raspberrypi3-64)
             BUILD_IMAGES="luneos-dev-image"
             ;;
         qemux86|qemux86-64)
@@ -269,7 +272,7 @@ function run_sstate-cleanup {
     if [ -d ${BUILD_TOPDIR} ] ; then
         cd ${BUILD_TOPDIR};
         # find sstate-cache/ ! -type d  | sed 's/.*sstate:[^:]*://g' | sed 's/-webos-linux.*$//g' | grep -v ^: | grep -v ^x86_64-linux: | sort -u  | xargs  | sed 's/ /,/g'
-        ARCHS="aarch64,aarch64-cortexa53,all,core2-64,cortexa7hf-neon-vfpv4,cortexa7t2hf-neon-vfpv4,cortexa8hf-neon,cortexa8t2hf-neon,hammerhead,i586,qemux86,qemux86_64,raspberrypi3,raspberrypi3_64,tenderloin,tissot,x86_64"
+        ARCHS="aarch64,aarch64-cortexa53,all,core2-64,cortexa7hf-neon-vfpv4,cortexa7t2hf-neon-vfpv4,cortexa8hf-neon,cortexa8t2hf-neon,hammerhead,i586,pinephone,qemux86,qemux86_64,raspberrypi3,raspberrypi3_64,tenderloin,tissot,x86_64"
         DU1=`du -hs sstate-cache/`
         echo "$DU1"
         OPENSSL="find sstate-cache/ -name '*:openssl:*populate_sysroot*tgz'"

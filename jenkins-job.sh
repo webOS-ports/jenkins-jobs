@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.5.18"
+BUILD_SCRIPT_VERSION="2.5.19"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -291,9 +291,9 @@ function run_sstate-cleanup {
 function run_compare-signatures {
     cd ${BUILD_TOPDIR}
     . ./setup-env
-    openembedded-core/scripts/sstate-diff-machines.sh --targets=luneos-dev-image --tmpdir=tmp-glibc/ --analyze --machines="hammerhead mako qemux86" | tee log.compare-signatures
-    openembedded-core/scripts/sstate-diff-machines.sh --targets=luneos-dev-image --tmpdir=tmp-glibc/ --analyze --machines="raspberrypi2 raspberrypi3 mako" | tee -a log.compare-signatures
-    openembedded-core/scripts/sstate-diff-machines.sh --targets=luneos-dev-image --tmpdir=tmp-glibc/ --analyze --machines="tissot mido raspberrypi3-64" | tee -a log.compare-signatures
+    openembedded-core/scripts/sstate-diff-machines.sh --targets=world --tmpdir=tmp-glibc/ --analyze --machines="hammerhead mako qemux86" | tee log.compare-signatures
+    openembedded-core/scripts/sstate-diff-machines.sh --targets=world --tmpdir=tmp-glibc/ --analyze --machines="raspberrypi2 raspberrypi3 mako" | tee -a log.compare-signatures
+    openembedded-core/scripts/sstate-diff-machines.sh --targets=world --tmpdir=tmp-glibc/ --analyze --machines="tissot mido raspberrypi3-64" | tee -a log.compare-signatures
     if [ ! -d sstate-diff-${BUILD_NUMBER} ]; then mkdir sstate-diff-${BUILD_NUMBER}; fi
     mv tmp-glibc/sstate-diff/* sstate-diff-${BUILD_NUMBER}
     mv log.compare-signatures sstate-diff-${BUILD_NUMBER}

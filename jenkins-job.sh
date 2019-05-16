@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.5.19"
+BUILD_SCRIPT_VERSION="2.5.20"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -289,11 +289,15 @@ function run_sstate-cleanup {
 }
 
 function run_compare-signatures {
+    declare -i RESULT=0
     cd ${BUILD_TOPDIR}
     . ./setup-env
     openembedded-core/scripts/sstate-diff-machines.sh --targets=world --tmpdir=tmp-glibc/ --analyze --machines="hammerhead mako qemux86" | tee log.compare-signatures
+    RESULT+=${PIPESTATUS[0]}
     openembedded-core/scripts/sstate-diff-machines.sh --targets=world --tmpdir=tmp-glibc/ --analyze --machines="raspberrypi2 raspberrypi3 mako" | tee -a log.compare-signatures
+    RESULT+=${PIPESTATUS[0]}
     openembedded-core/scripts/sstate-diff-machines.sh --targets=world --tmpdir=tmp-glibc/ --analyze --machines="tissot mido raspberrypi3-64" | tee -a log.compare-signatures
+    RESULT+=${PIPESTATUS[0]}
     if [ ! -d sstate-diff-${BUILD_NUMBER} ]; then mkdir sstate-diff-${BUILD_NUMBER}; fi
     mv tmp-glibc/sstate-diff/* sstate-diff-${BUILD_NUMBER}
     mv log.compare-signatures sstate-diff-${BUILD_NUMBER}
@@ -302,6 +306,8 @@ function run_compare-signatures {
     rm -rf sstate-diff-${BUILD_NUMBER}
 
     rsync -avir sstate-diff-${BUILD_NUMBER}.tar.bz2 jenkins@milla.nao:~/htdocs/builds/luneos-${BUILD_VERSION}/
+
+    exit ${RESULT}
 }
 
 function run_prepare {

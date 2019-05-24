@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.5.20"
+BUILD_SCRIPT_VERSION="2.5.21"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -714,8 +714,10 @@ function delete_unnecessary_images_webosose {
             for i in BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}-*.rpi-sdimg; do zip -j $i.zip $i; done
             # keep only rpi-sdimg.zip
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/Image*
+            rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/zImage*
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/modules-*
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/bcm2835-bootfiles
+            rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}.vfat
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}.rootfs.*
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}-*.ext3
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}-*.manifest

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.5.22"
+BUILD_SCRIPT_VERSION="2.5.23"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -272,7 +272,7 @@ function run_sstate-cleanup {
     if [ -d ${BUILD_TOPDIR} ] ; then
         cd ${BUILD_TOPDIR};
         # find sstate-cache/ ! -type d  | sed 's/.*sstate:[^:]*://g' | sed 's/-webos-linux.*$//g' | grep -v ^: | grep -v ^x86_64-linux: | sort -u  | xargs  | sed 's/ /,/g'
-	ARCHS="aarch64,aarch64-cortexa53,aarch64-halium,all,core2-64,cortexa7hf-neon-vfpv4,cortexa7t2hf-neon-vfpv4,cortexa8hf-neon,cortexa8hf-neon-halium,cortexa8t2hf-neon,cortexa8t2hf-neon-halium,hammerhead,i586,mako,mido,onyx,pinephone,qemux86,qemux86_64,raspberrypi2,raspberrypi3,raspberrypi3_64,rosy,tenderloin,tissot,x86_64"
+        ARCHS="aarch64,aarch64-cortexa53,aarch64-halium,all,core2-64,cortexa7hf-neon-vfpv4,cortexa7t2hf-neon-vfpv4,cortexa8hf-neon,cortexa8hf-neon-halium,cortexa8t2hf-neon,cortexa8t2hf-neon-halium,hammerhead,i586,mako,mido,onyx,pinephone,qemux86,qemux86_64,raspberrypi2,raspberrypi3,raspberrypi3_64,rosy,tenderloin,tissot,x86_64"
         DU1=`du -hs sstate-cache/`
         echo "$DU1"
         OPENSSL="find sstate-cache/ -name '*:openssl:*populate_sysroot*tgz'"
@@ -374,6 +374,7 @@ function run_prepare {
     echo 'IMAGE_FSTYPES_forcevariable_raspberrypi2 = "rpi-sdimg"' >> ${BUILD_TOPDIR}/conf/local.conf
     echo 'IMAGE_FSTYPES_forcevariable_raspberrypi3 = "rpi-sdimg"' >> ${BUILD_TOPDIR}/conf/local.conf
     echo 'IMAGE_FSTYPES_forcevariable_raspberrypi3-64 = "rpi-sdimg"' >> ${BUILD_TOPDIR}/conf/local.conf
+    echo 'IMAGE_FSTYPES_forcevariable_pinephone = "wic"' >> ${BUILD_TOPDIR}/conf/local.conf
 
     cat >> ${BUILD_TOPDIR}/conf/local.conf << EOF
 BB_DISKMON_DIRS = "\
@@ -683,6 +684,14 @@ function delete_unnecessary_images {
                 rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/*testdata.json
                 rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/*.dtbo
                 rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/*.dtb
+                ;;
+            pinephone)
+                # keep only luneos-dev-image-raspberrypiX.rpi-sdimg
+                echo "TODO: decide which images to keep (current one has only img.zip luneos-dev-image-pinephone-20190516.img.zip)"
+                rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/luneos-image-*.tar.gz
+                rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/luneos-image-*.ext3
+                rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/luneos-dev-image-*.tar.gz
+                rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/luneos-dev-image-*.ext3
                 ;;
             *)
                 echo "ERROR: ${BUILD_SCRIPT_NAME}-${BUILD_SCRIPT_VERSION} Unrecognized machine: '${M}', script doesn't know which images to delete"

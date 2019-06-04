@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.5.24"
+BUILD_SCRIPT_VERSION="2.5.25"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -371,9 +371,9 @@ function run_prepare {
     echo 'IMAGE_FSTYPES_forcevariable = "tar.gz"' >> ${BUILD_TOPDIR}/conf/local.conf
     echo 'IMAGE_FSTYPES_forcevariable_qemux86 = "tar.gz wic.vmdk"' >> ${BUILD_TOPDIR}/conf/local.conf
     echo 'IMAGE_FSTYPES_forcevariable_qemux86-64 = "tar.gz wic.vmdk"' >> ${BUILD_TOPDIR}/conf/local.conf
-    echo 'IMAGE_FSTYPES_forcevariable_raspberrypi2 = "rpi-sdimg"' >> ${BUILD_TOPDIR}/conf/local.conf
-    echo 'IMAGE_FSTYPES_forcevariable_raspberrypi3 = "rpi-sdimg"' >> ${BUILD_TOPDIR}/conf/local.conf
-    echo 'IMAGE_FSTYPES_forcevariable_raspberrypi3-64 = "rpi-sdimg"' >> ${BUILD_TOPDIR}/conf/local.conf
+    echo 'IMAGE_FSTYPES_forcevariable_raspberrypi2 = "rpi-sdimg.gz"' >> ${BUILD_TOPDIR}/conf/local.conf
+    echo 'IMAGE_FSTYPES_forcevariable_raspberrypi3 = "rpi-sdimg.gz"' >> ${BUILD_TOPDIR}/conf/local.conf
+    echo 'IMAGE_FSTYPES_forcevariable_raspberrypi3-64 = "rpi-sdimg.gz"' >> ${BUILD_TOPDIR}/conf/local.conf
     echo 'IMAGE_FSTYPES_forcevariable_pinephone = "wic.gz"' >> ${BUILD_TOPDIR}/conf/local.conf
 
     cat >> ${BUILD_TOPDIR}/conf/local.conf << EOF
@@ -675,7 +675,7 @@ function delete_unnecessary_images {
                 rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/luneos-image-*.ext3
                 rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/luneos-dev-image-*.tar.gz
                 rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/luneos-dev-image-*.ext3
-                rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/luneos-dev-image-${M}.rpi-sdimg
+                rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/luneos-dev-image-${M}.rpi-sdimg.gz
                 rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/*.manifest
                 rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/modules-*
                 rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/zImage*

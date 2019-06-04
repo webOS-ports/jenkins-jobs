@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.5.23"
+BUILD_SCRIPT_VERSION="2.5.24"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -374,7 +374,7 @@ function run_prepare {
     echo 'IMAGE_FSTYPES_forcevariable_raspberrypi2 = "rpi-sdimg"' >> ${BUILD_TOPDIR}/conf/local.conf
     echo 'IMAGE_FSTYPES_forcevariable_raspberrypi3 = "rpi-sdimg"' >> ${BUILD_TOPDIR}/conf/local.conf
     echo 'IMAGE_FSTYPES_forcevariable_raspberrypi3-64 = "rpi-sdimg"' >> ${BUILD_TOPDIR}/conf/local.conf
-    echo 'IMAGE_FSTYPES_forcevariable_pinephone = "wic"' >> ${BUILD_TOPDIR}/conf/local.conf
+    echo 'IMAGE_FSTYPES_forcevariable_pinephone = "wic.gz"' >> ${BUILD_TOPDIR}/conf/local.conf
 
     cat >> ${BUILD_TOPDIR}/conf/local.conf << EOF
 BB_DISKMON_DIRS = "\
@@ -687,11 +687,19 @@ function delete_unnecessary_images {
                 ;;
             pinephone)
                 # keep only luneos-dev-image-raspberrypiX.rpi-sdimg
-                echo "TODO: decide which images to keep (current one has only img.zip luneos-dev-image-pinephone-20190516.img.zip)"
-                rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/luneos-image-*.tar.gz
-                rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/luneos-image-*.ext3
-                rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/luneos-dev-image-*.tar.gz
-                rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/luneos-dev-image-*.ext3
+                rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/luneos-image-*.wic.gz
+                rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/luneos-dev-image-*.wic.gz
+                rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/Image*
+                rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/*.manifest
+                rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/modules-*
+                rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/initramfs-uboot-image-*
+                rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/bl31*
+                rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/boot*
+                rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/u-boot*
+                rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/sunxi*
+                rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/sun50i*
+                rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/*testdata.json
+                rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/*.dtb
                 ;;
             *)
                 echo "ERROR: ${BUILD_SCRIPT_NAME}-${BUILD_SCRIPT_VERSION} Unrecognized machine: '${M}', script doesn't know which images to delete"

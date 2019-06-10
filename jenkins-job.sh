@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.5.25"
+BUILD_SCRIPT_VERSION="2.5.26"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -686,9 +686,10 @@ function delete_unnecessary_images {
                 rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/*.dtb
                 ;;
             pinephone)
-                # keep only luneos-dev-image-raspberrypiX.rpi-sdimg
-                rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/luneos-image-*.wic.gz
-                rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/luneos-dev-image-*.wic.gz
+                rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/luneos-image-${M}.wic.gz
+                rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/luneos-dev-image-${M}.wic.gz
+                rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/luneos-image-${M}.wic.bmap
+                rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/luneos-dev-image-${M}.wic.bmap
                 rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/Image*
                 rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/*.manifest
                 rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/modules-*

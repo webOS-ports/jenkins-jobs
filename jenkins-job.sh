@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.5.26"
+BUILD_SCRIPT_VERSION="2.5.27"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -374,7 +374,7 @@ function run_prepare {
     echo 'IMAGE_FSTYPES_forcevariable_raspberrypi2 = "rpi-sdimg.gz"' >> ${BUILD_TOPDIR}/conf/local.conf
     echo 'IMAGE_FSTYPES_forcevariable_raspberrypi3 = "rpi-sdimg.gz"' >> ${BUILD_TOPDIR}/conf/local.conf
     echo 'IMAGE_FSTYPES_forcevariable_raspberrypi3-64 = "rpi-sdimg.gz"' >> ${BUILD_TOPDIR}/conf/local.conf
-    echo 'IMAGE_FSTYPES_forcevariable_pinephone = "wic.gz"' >> ${BUILD_TOPDIR}/conf/local.conf
+    echo 'IMAGE_FSTYPES_forcevariable_pinephone = "wic.gz wic.bmap"' >> ${BUILD_TOPDIR}/conf/local.conf
 
     cat >> ${BUILD_TOPDIR}/conf/local.conf << EOF
 BB_DISKMON_DIRS = "\

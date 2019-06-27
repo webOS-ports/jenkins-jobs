@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.5.27"
+BUILD_SCRIPT_VERSION="2.5.28"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -729,6 +729,8 @@ function delete_unnecessary_images_webosose {
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}-*.vmdk
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/bzImage*
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/modules-*
+            rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/*.testdata.json
+            rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/*.efi
             ;;
         raspberrypi3)
             # unfortunately rpi-sdimg.zip in IMAGE_FSTYPES doesn't work, because how the webOS OSE handles the hardlinks in deploy, this will stay a symlink to the file which we remove later
@@ -743,7 +745,11 @@ function delete_unnecessary_images_webosose {
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}-*.ext3
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}-*.manifest
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}-*.tar.gz
+            rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}-*.tar.bz2
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}-*.rpi-sdimg
+            rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/*.testdata.json
+            rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/*.dtb
+            rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/*.dtbo
             ;;
         *)
             echo "ERROR: ${BUILD_SCRIPT_NAME}-${BUILD_SCRIPT_VERSION} Unrecognized machine: '${BUILD_MACHINE}', script doesn't know which images to build"
@@ -804,6 +810,8 @@ function run_webosose {
     sanity-check
     ./mcf --enable-generate-mirror-tarballs ${BUILD_MACHINE}
     ./mcf --command update --clean
+
+    echo 'INHERIT += "rm_work"' > webos-local.conf
 
     . ./oe-init-build-env
     export MACHINE="${BUILD_MACHINE}"

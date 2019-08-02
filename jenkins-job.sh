@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.5.28"
+BUILD_SCRIPT_VERSION="2.5.29"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -183,7 +183,7 @@ function set_images {
         return
     fi
     if [ "${BUILD_VERSION}" = "webosose" ] ; then
-        BUILD_IMAGES="webos-image"
+        BUILD_IMAGES="webos-image webos-image-devel"
         return
     fi
     case ${BUILD_MACHINE} in
@@ -715,6 +715,7 @@ function delete_unnecessary_images_webosose {
         qemux86|qemux86-64)
             # unfortunately vmdk.zip in IMAGE_FSTYPES doesn't work with the old Yocto used by webOS OSE
             for i in BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}-*.vmdk; do zip -j $i.zip $i; done
+            for i in BUILD/deploy/images/${BUILD_MACHINE}/webos-image-devel-${BUILD_MACHINE}-*.vmdk; do zip -j $i.zip $i; done
             # keep only vmdk.zip
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}.rootfs.*
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}.hdddirect
@@ -727,6 +728,18 @@ function delete_unnecessary_images_webosose {
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}-*.qemuboot.conf
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}-*.hdddirect
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}-*.vmdk
+
+            rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-devel-${BUILD_MACHINE}.rootfs.*
+            rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-devel-${BUILD_MACHINE}.hdddirect
+            rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-devel-${BUILD_MACHINE}.qemuboot.conf
+            rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-devel-${BUILD_MACHINE}.vmdk
+            rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-devel-${BUILD_MACHINE}-*.ext3
+            rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-devel-${BUILD_MACHINE}-*.ext4
+            rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-devel-${BUILD_MACHINE}-*.manifest
+            rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-devel-${BUILD_MACHINE}-*.tar.gz
+            rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-devel-${BUILD_MACHINE}-*.qemuboot.conf
+            rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-devel-${BUILD_MACHINE}-*.hdddirect
+            rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-devel-${BUILD_MACHINE}-*.vmdk
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/bzImage*
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/modules-*
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/*.testdata.json
@@ -735,6 +748,7 @@ function delete_unnecessary_images_webosose {
         raspberrypi3)
             # unfortunately rpi-sdimg.zip in IMAGE_FSTYPES doesn't work, because how the webOS OSE handles the hardlinks in deploy, this will stay a symlink to the file which we remove later
             for i in BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}-*.rpi-sdimg; do zip -j $i.zip $i; done
+            for i in BUILD/deploy/images/${BUILD_MACHINE}/webos-image-devel-${BUILD_MACHINE}-*.rpi-sdimg; do zip -j $i.zip $i; done
             # keep only rpi-sdimg.zip
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/Image*
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/zImage*
@@ -747,6 +761,13 @@ function delete_unnecessary_images_webosose {
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}-*.tar.gz
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}-*.tar.bz2
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}-*.rpi-sdimg
+            rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-devel-${BUILD_MACHINE}.vfat
+            rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-devel-${BUILD_MACHINE}.rootfs.*
+            rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-devel-${BUILD_MACHINE}-*.ext3
+            rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-devel-${BUILD_MACHINE}-*.manifest
+            rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-devel-${BUILD_MACHINE}-*.tar.gz
+            rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-devel-${BUILD_MACHINE}-*.tar.bz2
+            rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-devel-${BUILD_MACHINE}-*.rpi-sdimg
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/*.testdata.json
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/*.dtb
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/*.dtbo

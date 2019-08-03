@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.5.29"
+BUILD_SCRIPT_VERSION="2.5.30"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -757,13 +757,14 @@ function delete_unnecessary_images_webosose {
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}.vfat
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}.rootfs.*
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}-*.ext3
+            rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}-*.ext4
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}-*.manifest
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}-*.tar.gz
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}-*.tar.bz2
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}-*.rpi-sdimg
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-devel-${BUILD_MACHINE}.vfat
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-devel-${BUILD_MACHINE}.rootfs.*
-            rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-devel-${BUILD_MACHINE}-*.ext3
+            rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-devel-${BUILD_MACHINE}-*.ext4
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-devel-${BUILD_MACHINE}-*.manifest
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-devel-${BUILD_MACHINE}-*.tar.gz
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-devel-${BUILD_MACHINE}-*.tar.bz2

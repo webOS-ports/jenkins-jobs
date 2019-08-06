@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.5.30"
+BUILD_SCRIPT_VERSION="2.5.31"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -424,7 +424,14 @@ function run_update-manifest() {
         echo "Updating device image manifest for testing for machines ${SUPPORTED_MACHINES}"
         wget http://build.webos-ports.org/luneos-testing/device-images.json -O device-images.json
         for machine in ${SUPPORTED_MACHINES} ; do
-            image_path=`ssh jenkins@milla.nao find /home2/jenkins/htdocs/builds/luneos-testing/images/$machine -type f -name 'luneos-dev-package-$machine*' ! -name 'luneos-dev-package-$machine.zip' ! -name '*.md5' | sort -r | head -n 1`
+            image_path=`ssh jenkins@milla.nao find /home2/jenkins/htdocs/builds/luneos-testing/images/$machine -type f \
+                -name 'luneos-dev-emulator*.tar.gz' -o \
+                -name 'luneos-dev-package*.zip' -o \
+                -name 'luneos-dev-image*.zip' -o \
+                -name 'luneos-dev-image*.rpi-sdimg.gz' -o \
+                -name 'luneos-dev-image*.wic.gz' -o \
+                -name 'luneos-dev-image*.rootfs.tar.gz' \|
+                sort -r | head -n 1`
             if [ -z "$image_path" ] ; then
                 echo "Couldn't find image for machine $machine"
                 exit 1

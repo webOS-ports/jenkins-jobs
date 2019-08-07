@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.5.31"
+BUILD_SCRIPT_VERSION="2.5.32"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -430,7 +430,7 @@ function run_update-manifest() {
                 -name 'luneos-dev-image*.zip' -o \
                 -name 'luneos-dev-image*.rpi-sdimg.gz' -o \
                 -name 'luneos-dev-image*.wic.gz' -o \
-                -name 'luneos-dev-image*.rootfs.tar.gz' \|
+                -name 'luneos-dev-image*.rootfs.tar.gz' |\
                 sort -r | head -n 1`
             if [ -z "$image_path" ] ; then
                 echo "Couldn't find image for machine $machine"

@@ -122,7 +122,7 @@ function parse_job_name {
         *_release)
             # global job
             ;;
-        halium-luneos-*)
+        LuneOS/halium-luneos-*)
             # global job
             ;;
         *)
@@ -166,10 +166,10 @@ function parse_job_name {
         *_release)
             BUILD_TYPE="release"
             ;;
-        halium-luneos-*-build)
+        LuneOS/halium-luneos-*-build)
             BUILD_TYPE="halium"
             ;;
-        halium-luneos-rsync)
+        LuneOS/halium-luneos-rsync)
             BUILD_TYPE="halium-rsync"
             ;;
         *)

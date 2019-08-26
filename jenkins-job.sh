@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.5.33"
+BUILD_SCRIPT_VERSION="2.5.34"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -272,7 +272,11 @@ function run_sstate-cleanup {
     if [ -d ${BUILD_TOPDIR} ] ; then
         cd ${BUILD_TOPDIR};
         # find sstate-cache/ ! -type d  | sed 's/.*sstate:[^:]*://g' | sed 's/-webos-linux.*$//g' | grep -v ^: | grep -v ^x86_64-linux: | sort -u  | xargs  | sed 's/ /,/g'
-        ARCHS="aarch64,aarch64-cortexa53,aarch64-halium,all,core2-64,cortexa7hf-neon-vfpv4,cortexa7t2hf-neon-vfpv4,cortexa8hf-neon,cortexa8hf-neon-halium,cortexa8t2hf-neon,cortexa8t2hf-neon-halium,hammerhead,i586,mako,mido,onyx,pinephone,qemux86,qemux86_64,raspberrypi2,raspberrypi3,raspberrypi3_64,rosy,tenderloin,tissot,x86_64"
+        # jenkins@bonaire:~/workspace$ find luneos-shared/sstate-cache/ ! -type d  | sed 's/.*sstate:[^:]*://g' | sed 's/-webos-linux.*$//g' | grep -v ^: | grep -v ^x86_64-linux: | sort -u  | xargs  | sed 's/ /,/g'
+        # aarch64,aarch64-cortexa53,aarch64-halium,all,core2-64,cortexa7t2hf-neon-vfpv4,cortexa8t2hf-neon-halium,hammerhead,i586,mako,mido,onyx,pinephone,qemux86,qemux86_64,raspberrypi2,raspberrypi3,raspberrypi3_64,rosy,tenderloin,tissot,x86_64
+        # jenkins@bonaire:~/workspace$ find luneos-unstable/webos-ports/sstate-cache/ ! -type d  | sed 's/.*sstate:[^:]*://g' | sed 's/-webos-linux.*$//g' | grep -v ^: | grep -v ^x86_64-linux: | sort -u  | xargs  | sed 's/ /,/g'
+        # all,core2-32,core2-64,cortexa7t2hf-neon-vfpv4,qemux86,qemux86_64,raspberrypi3,x86_64
+        ARCHS="aarch64,aarch64-cortexa53,aarch64-halium,all,core2-32,core2-64,cortexa7hf-neon-vfpv4,cortexa7t2hf-neon-vfpv4,cortexa8hf-neon,cortexa8hf-neon-halium,cortexa8t2hf-neon,cortexa8t2hf-neon-halium,hammerhead,i586,mako,mido,onyx,pinephone,qemux86,qemux86_64,raspberrypi2,raspberrypi3,raspberrypi3_64,rosy,tenderloin,tissot,x86_64"
         DU1=`du -hs sstate-cache/`
         echo "$DU1"
         OPENSSL="find sstate-cache/ -name '*:openssl:*populate_sysroot*tgz'"

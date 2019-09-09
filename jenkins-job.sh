@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.5.34"
+BUILD_SCRIPT_VERSION="2.5.35"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -110,6 +110,12 @@ function parse_job_name {
         *_raspberrypi3-64)
             BUILD_MACHINE="raspberrypi3-64"
             ;;
+        *_raspberrypi4)
+            BUILD_MACHINE="raspberrypi4"
+            ;;
+        *_raspberrypi4-64)
+            BUILD_MACHINE="raspberrypi4-64"
+            ;;
         *_workspace-*)
             # global jobs
             ;;
@@ -126,7 +132,7 @@ function parse_job_name {
             # global job
             ;;
         *)
-            echo "ERROR: ${BUILD_SCRIPT_NAME}-${BUILD_SCRIPT_VERSION} Unrecognized machine in JOB_NAME: '${JOB_NAME}', it should end with '_a500', '_grouper', '_hammerhead', '_maguro', '_mako', '_mido', '_onyx', '_pinephone', '_qemuarm', '_qemux86', '_qemux86-64', '_rosy', '_tenderloin', '_tissot', '_raspberrypi2' or '_raspberrypi3' or '_raspberrypi3-64'"
+            echo "ERROR: ${BUILD_SCRIPT_NAME}-${BUILD_SCRIPT_VERSION} Unrecognized machine in JOB_NAME: '${JOB_NAME}', it should end with '_a500', '_grouper', '_hammerhead', '_maguro', '_mako', '_mido', '_onyx', '_pinephone', '_qemuarm', '_qemux86', '_qemux86-64', '_rosy', '_tenderloin', '_tissot', '_raspberrypi2' or '_raspberrypi3' or '_raspberrypi3-64' or '_raspberrypi4' or '_raspberrypi4-64'"
             exit 1
             ;;
     esac
@@ -190,7 +196,7 @@ function set_images {
         grouper|maguro|mako|hammerhead|mido|onyx|rosy|tissot)
             BUILD_IMAGES="luneos-dev-package"
             ;;
-        qemuarm|tenderloin|a500|pinephone|raspberrypi2|raspberrypi3|raspberrypi3-64)
+        qemuarm|tenderloin|a500|pinephone|raspberrypi2|raspberrypi3|raspberrypi3-64|raspberrypi4|raspberrypi4-64)
             BUILD_IMAGES="luneos-dev-image"
             ;;
         qemux86|qemux86-64)
@@ -273,10 +279,10 @@ function run_sstate-cleanup {
         cd ${BUILD_TOPDIR};
         # find sstate-cache/ ! -type d  | sed 's/.*sstate:[^:]*://g' | sed 's/-webos-linux.*$//g' | grep -v ^: | grep -v ^x86_64-linux: | sort -u  | xargs  | sed 's/ /,/g'
         # jenkins@bonaire:~/workspace$ find luneos-shared/sstate-cache/ ! -type d  | sed 's/.*sstate:[^:]*://g' | sed 's/-webos-linux.*$//g' | grep -v ^: | grep -v ^x86_64-linux: | sort -u  | xargs  | sed 's/ /,/g'
-        # aarch64,aarch64-cortexa53,aarch64-halium,all,core2-64,cortexa7t2hf-neon-vfpv4,cortexa8t2hf-neon-halium,hammerhead,i586,mako,mido,onyx,pinephone,qemux86,qemux86_64,raspberrypi2,raspberrypi3,raspberrypi3_64,rosy,tenderloin,tissot,x86_64
+        # aarch64,aarch64-cortexa53,aarch64-halium,all,core2-64,cortexa7t2hf-neon-vfpv4,cortexa8t2hf-neon-halium,hammerhead,i586,mako,mido,onyx,pinephone,qemux86,qemux86_64,raspberrypi2,raspberrypi3,raspberrypi3_64,raspberrypi4,raspberrypi4_64,rosy,tenderloin,tissot,x86_64
         # jenkins@bonaire:~/workspace$ find luneos-unstable/webos-ports/sstate-cache/ ! -type d  | sed 's/.*sstate:[^:]*://g' | sed 's/-webos-linux.*$//g' | grep -v ^: | grep -v ^x86_64-linux: | sort -u  | xargs  | sed 's/ /,/g'
         # all,core2-32,core2-64,cortexa7t2hf-neon-vfpv4,qemux86,qemux86_64,raspberrypi3,x86_64
-        ARCHS="aarch64,aarch64-cortexa53,aarch64-halium,all,core2-32,core2-64,cortexa7hf-neon-vfpv4,cortexa7t2hf-neon-vfpv4,cortexa8hf-neon,cortexa8hf-neon-halium,cortexa8t2hf-neon,cortexa8t2hf-neon-halium,hammerhead,i586,mako,mido,onyx,pinephone,qemux86,qemux86_64,raspberrypi2,raspberrypi3,raspberrypi3_64,rosy,tenderloin,tissot,x86_64"
+        ARCHS="aarch64,aarch64-cortexa53,aarch64-halium,all,core2-32,core2-64,cortexa7hf-neon-vfpv4,cortexa7t2hf-neon-vfpv4,cortexa8hf-neon,cortexa8hf-neon-halium,cortexa8t2hf-neon,cortexa8t2hf-neon-halium,hammerhead,i586,mako,mido,onyx,pinephone,qemux86,qemux86_64,raspberrypi2,raspberrypi3,raspberrypi3_64,raspberrypi4,raspberrypi4_64,rosy,tenderloin,tissot,x86_64"
         DU1=`du -hs sstate-cache/`
         echo "$DU1"
         OPENSSL="find sstate-cache/ -name '*:openssl:*populate_sysroot*tgz'"
@@ -378,6 +384,8 @@ function run_prepare {
     echo 'IMAGE_FSTYPES_forcevariable_raspberrypi2 = "rpi-sdimg.gz"' >> ${BUILD_TOPDIR}/conf/local.conf
     echo 'IMAGE_FSTYPES_forcevariable_raspberrypi3 = "rpi-sdimg.gz"' >> ${BUILD_TOPDIR}/conf/local.conf
     echo 'IMAGE_FSTYPES_forcevariable_raspberrypi3-64 = "rpi-sdimg.gz"' >> ${BUILD_TOPDIR}/conf/local.conf
+    echo 'IMAGE_FSTYPES_forcevariable_raspberrypi4 = "rpi-sdimg.gz"' >> ${BUILD_TOPDIR}/conf/local.conf
+    echo 'IMAGE_FSTYPES_forcevariable_raspberrypi4-64 = "rpi-sdimg.gz"' >> ${BUILD_TOPDIR}/conf/local.conf
     echo 'IMAGE_FSTYPES_forcevariable_pinephone = "wic.gz wic.bmap"' >> ${BUILD_TOPDIR}/conf/local.conf
 
     cat >> ${BUILD_TOPDIR}/conf/local.conf << EOF
@@ -680,7 +688,7 @@ function delete_unnecessary_images {
                 rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/systemd-bootx64.efi
                 rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/systemd-bootia32.efi
                 ;;
-            raspberrypi2|raspberrypi3|raspberrypi3-64)
+            raspberrypi2|raspberrypi3|raspberrypi3-64|raspberrypi4|raspberrypi4-64)
                 # keep only luneos-dev-image-raspberrypiX.rpi-sdimg
                 rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/luneos-image-*.tar.gz
                 rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/luneos-image-*.ext3

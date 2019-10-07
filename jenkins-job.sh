@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.5.35"
+BUILD_SCRIPT_VERSION="2.5.36"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -282,12 +282,15 @@ function run_sstate-cleanup {
         # aarch64,aarch64-cortexa53,aarch64-halium,all,core2-64,cortexa7t2hf-neon-vfpv4,cortexa8t2hf-neon-halium,hammerhead,i586,mako,mido,onyx,pinephone,qemux86,qemux86_64,raspberrypi2,raspberrypi3,raspberrypi3_64,raspberrypi4,raspberrypi4_64,rosy,tenderloin,tissot,x86_64
         # jenkins@bonaire:~/workspace$ find luneos-unstable/webos-ports/sstate-cache/ ! -type d  | sed 's/.*sstate:[^:]*://g' | sed 's/-webos-linux.*$//g' | grep -v ^: | grep -v ^x86_64-linux: | sort -u  | xargs  | sed 's/ /,/g'
         # all,core2-32,core2-64,cortexa7t2hf-neon-vfpv4,qemux86,qemux86_64,raspberrypi3,x86_64
-        ARCHS="aarch64,aarch64-cortexa53,aarch64-halium,all,core2-32,core2-64,cortexa7hf-neon-vfpv4,cortexa7t2hf-neon-vfpv4,cortexa8hf-neon,cortexa8hf-neon-halium,cortexa8t2hf-neon,cortexa8t2hf-neon-halium,hammerhead,i586,mako,mido,onyx,pinephone,qemux86,qemux86_64,raspberrypi2,raspberrypi3,raspberrypi3_64,raspberrypi4,raspberrypi4_64,rosy,tenderloin,tissot,x86_64"
+        ARCHS="aarch64,aarch64-halium,aarch64-rpi,all,core2-32,core2-64,cortexa7hf-neon-vfpv4,cortexa7t2hf-neon-vfpv4,cortexa8hf-neon,cortexa8hf-neon-halium,cortexa8t2hf-neon,cortexa8t2hf-neon-halium,hammerhead,i586,mako,mido,onyx,pinephone,qemux86,qemux86_64,raspberrypi2,raspberrypi3,raspberrypi3_64,raspberrypi4,raspberrypi4_64,rosy,tenderloin,tissot,x86_64"
         DU1=`du -hs sstate-cache/`
         echo "$DU1"
         OPENSSL="find sstate-cache/ -name '*:openssl:*populate_sysroot*tgz'"
         ARCHIVES1=`sh -c "${OPENSSL}"`; echo "number of openssl archives: `echo "$ARCHIVES1" | wc -l`"; echo "$ARCHIVES1"
         openembedded-core/scripts/sstate-cache-management.sh -L --cache-dir=sstate-cache -y -d --extra-archs=${ARCHS// /,} || true
+        echo "number of archives for removed aarch64-cortexa53 architecture:"
+        find sstate-cache -name \*:aarch64-cortexa53:\* | wc -l
+        find sstate-cache -name \*:aarch64-cortexa53:\* -delete
         DU2=`du -hs sstate-cache/`
         echo "$DU2"
         ARCHIVES2=`sh -c "${OPENSSL}"`; echo "number of openssl archives: `echo "$ARCHIVES2" | wc -l`"; echo "$ARCHIVES2"

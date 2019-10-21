@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.5.38"
+BUILD_SCRIPT_VERSION="2.6.0"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -322,6 +322,7 @@ function run_compare-signatures {
     rm -rf sstate-diff-${BUILD_NUMBER}
 
     rsync -avir sstate-diff-${BUILD_NUMBER}.tar.bz2 jenkins@milla.nao:~/htdocs/builds/luneos-${BUILD_VERSION}/
+    RESULT+=$?
 
     exit ${RESULT}
 }
@@ -409,16 +410,22 @@ EOF
 
 function run_rsync {
     delete_unnecessary_images
+    RESULT+=$?
 
     if [ "${BUILD_VERSION}" = "stable" ] ; then
         scripts/staging_sync.sh ${BUILD_TOPDIR}/tmp-glibc/deploy      jenkins@milla.nao:~/htdocs/builds/luneos-${BUILD_VERSION}-staging/wip
+        RESULT+=$?
     else
         scripts/staging_sync.sh ${BUILD_TOPDIR}/tmp-glibc/deploy      jenkins@milla.nao:~/htdocs/builds/luneos-${BUILD_VERSION}/
+        RESULT+=$?
     fi
 
     rsync -avir --delete ${BUILD_TOPDIR}/sstate-cache/                jenkins@milla.nao:~/htdocs/builds/luneos-${BUILD_VERSION}/sstate-cache/
+    RESULT+=$?
     rsync -avir --no-links --exclude '*.done' --exclude '*_bad-checksum_*' --exclude git2 \
                            --exclude svn --exclude bzr downloads/      jenkins@milla.nao:~/htdocs/sources/
+    RESULT+=$?
+    exit ${RESULT}
 }
 
 function run_halium-rsync {
@@ -873,8 +880,10 @@ EOF
     delete_unnecessary_images_webosose
 
     rsync -avir ${BUILD_TOPDIR}/BUILD/deploy/images/${BUILD_MACHINE}/               jenkins@milla.nao:~/htdocs/builds/webosose/${BUILD_MACHINE}/
+    RESULT+=$?
     rsync -avir --no-links --exclude '*.done' --exclude '*_bad-checksum_*' --exclude git2 \
                 --exclude svn --exclude bzr ${BUILD_TOPDIR}/downloads/              jenkins@milla.nao:~/htdocs/builds/webosose/sources/
+    RESULT+=$?
 
     sleep 10 # wait a bit for pseudo processes to finish before trying to umount it
     umount ${BUILD_TOPDIR}/BUILD

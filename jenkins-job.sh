@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.5.37"
+BUILD_SCRIPT_VERSION="2.5.38"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -738,10 +738,7 @@ function delete_unnecessary_images_webosose {
     rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/README_-_DO_NOT_DELETE_FILES_IN_THIS_DIRECTORY.txt
     case ${BUILD_MACHINE} in
         qemux86|qemux86-64)
-            # unfortunately vmdk.zip in IMAGE_FSTYPES doesn't work with the old Yocto used by webOS OSE
-            for i in BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}-*.vmdk; do zip -j $i.zip $i; done
-            for i in BUILD/deploy/images/${BUILD_MACHINE}/webos-image-devel-${BUILD_MACHINE}-*.vmdk; do zip -j $i.zip $i; done
-            # keep only vmdk.zip
+            # keep only wic.vmdk.gz
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}.rootfs.*
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}.hdddirect
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}.qemuboot.conf
@@ -770,11 +767,8 @@ function delete_unnecessary_images_webosose {
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/*.testdata.json
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/*.efi
             ;;
-        raspberrypi3)
-            # unfortunately rpi-sdimg.zip in IMAGE_FSTYPES doesn't work, because how the webOS OSE handles the hardlinks in deploy, this will stay a symlink to the file which we remove later
-            for i in BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}-*.rpi-sdimg; do zip -j $i.zip $i; done
-            for i in BUILD/deploy/images/${BUILD_MACHINE}/webos-image-devel-${BUILD_MACHINE}-*.rpi-sdimg; do zip -j $i.zip $i; done
-            # keep only rpi-sdimg.zip
+        raspberrypi3|raspberrypi4)
+            # keep only wic.gz
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/Image*
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/zImage*
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/modules-*
@@ -858,7 +852,16 @@ function run_webosose {
     ./mcf --enable-generate-mirror-tarballs ${BUILD_MACHINE}
     ./mcf --command update --clean
 
-    echo 'INHERIT += "rm_work"' > webos-local.conf
+    cat > webos-local.conf << EOF
+INHERIT += "rm_work"
+IMAGE_FSTYPES_raspberrypi3_pn-webos-image = "ota-ext4 wic.gz"
+IMAGE_FSTYPES_raspberrypi3_pn-webos-image-devel = "ota-ext4 wic.gz"
+IMAGE_FSTYPES_raspberrypi4_pn-webos-image = "ota-ext4 wic.gz"
+IMAGE_FSTYPES_raspberrypi4_pn-webos-image-devel = "ota-ext4 wic.gz"
+IMAGE_FSTYPES_qemux86_pn-webos-image = "wic.vmdk.gz"
+IMAGE_FSTYPES_qemux86_pn-webos-image-devel = "wic.vmdk.gz"
+EOF
+
 
     . ./oe-init-build-env
     export MACHINE="${BUILD_MACHINE}"

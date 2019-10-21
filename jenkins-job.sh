@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.5.36"
+BUILD_SCRIPT_VERSION="2.5.37"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -343,10 +343,6 @@ function run_prepare {
     sed -i 's/# INHERIT += "rm_work"/INHERIT += "rm_work"/' ${BUILD_TOPDIR}/conf/local.conf
 
     sed -i '/^DISTRO_FEED_/d' ${BUILD_TOPDIR}/conf/local.conf
-    echo "DISTRO_FEED_PREFIX=\"luneos-${BUILD_VERSION}\"" >> ${BUILD_TOPDIR}/conf/local.conf
-    echo "DISTRO_FEED_URI=\"http://build.webos-ports.org/luneos-${BUILD_VERSION}/ipk/\"" >> ${BUILD_TOPDIR}/conf/local.conf
-
-    echo 'BB_GENERATE_MIRROR_TARBALLS = "1"' >> ${BUILD_TOPDIR}/conf/local.conf
 
     # remove default SSTATE_MIRRORS ?= "file://.* http://build.webos-ports.org/luneos-${BUILD_VERSION}/sstate-cache/PATH"
     sed -i '/^SSTATE_MIRRORS/d' ${BUILD_TOPDIR}/conf/local.conf
@@ -368,30 +364,28 @@ function run_prepare {
         \"" >> ${BUILD_TOPDIR}/conf/local.conf
     fi
 
-    echo 'CONNECTIVITY_CHECK_URIS = ""' >> ${BUILD_TOPDIR}/conf/local.conf
-    if [ ! -d ${BUILD_TOPDIR}/buildhistory/ ] ; then
-        cd ${BUILD_TOPDIR}
-        git clone git@github.com:webOS-ports/buildhistory.git
-        cd buildhistory;
-        git checkout -b luneos-${BUILD_VERSION} origin/luneos-${BUILD_VERSION} || git checkout -b luneos-${BUILD_VERSION} origin/webos-ports-setup
-        cd ../..
-    fi
-
-    echo 'BUILDHISTORY_COMMIT ?= "1"' >> ${BUILD_TOPDIR}/conf/local.conf
-    echo 'BUILDHISTORY_COMMIT_AUTHOR ?= "Martin Jansa <Martin.Jansa@gmail.com>"' >> ${BUILD_TOPDIR}/conf/local.conf
-    echo "BUILDHISTORY_PUSH_REPO ?= \"origin luneos-${BUILD_VERSION}\"" >> ${BUILD_TOPDIR}/conf/local.conf
-
-    echo 'IMAGE_FSTYPES_forcevariable = "tar.gz"' >> ${BUILD_TOPDIR}/conf/local.conf
-    echo 'IMAGE_FSTYPES_forcevariable_qemux86 = "tar.gz wic.vmdk"' >> ${BUILD_TOPDIR}/conf/local.conf
-    echo 'IMAGE_FSTYPES_forcevariable_qemux86-64 = "tar.gz wic.vmdk"' >> ${BUILD_TOPDIR}/conf/local.conf
-    echo 'IMAGE_FSTYPES_forcevariable_raspberrypi2 = "rpi-sdimg.gz"' >> ${BUILD_TOPDIR}/conf/local.conf
-    echo 'IMAGE_FSTYPES_forcevariable_raspberrypi3 = "rpi-sdimg.gz"' >> ${BUILD_TOPDIR}/conf/local.conf
-    echo 'IMAGE_FSTYPES_forcevariable_raspberrypi3-64 = "rpi-sdimg.gz"' >> ${BUILD_TOPDIR}/conf/local.conf
-    echo 'IMAGE_FSTYPES_forcevariable_raspberrypi4 = "rpi-sdimg.gz"' >> ${BUILD_TOPDIR}/conf/local.conf
-    echo 'IMAGE_FSTYPES_forcevariable_raspberrypi4-64 = "rpi-sdimg.gz"' >> ${BUILD_TOPDIR}/conf/local.conf
-    echo 'IMAGE_FSTYPES_forcevariable_pinephone = "wic.gz wic.bmap"' >> ${BUILD_TOPDIR}/conf/local.conf
-
     cat >> ${BUILD_TOPDIR}/conf/local.conf << EOF
+DISTRO_FEED_PREFIX = "luneos-${BUILD_VERSION}"
+DISTRO_FEED_URI = "http://build.webos-ports.org/luneos-${BUILD_VERSION}/ipk/"
+
+BB_GENERATE_MIRROR_TARBALLS = "1"
+
+CONNECTIVITY_CHECK_URIS = ""
+
+BUILDHISTORY_COMMIT ?= "1"
+BUILDHISTORY_COMMIT_AUTHOR ?= "Martin Jansa <Martin.Jansa@gmail.com>"
+BUILDHISTORY_PUSH_REPO ?= "origin luneos-${BUILD_VERSION}"
+
+IMAGE_FSTYPES_forcevariable = "tar.gz"
+IMAGE_FSTYPES_forcevariable_qemux86 = "tar.gz wic.vmdk"
+IMAGE_FSTYPES_forcevariable_qemux86-64 = "tar.gz wic.vmdk"
+IMAGE_FSTYPES_forcevariable_raspberrypi2 = "rpi-sdimg.gz"
+IMAGE_FSTYPES_forcevariable_raspberrypi3 = "rpi-sdimg.gz"
+IMAGE_FSTYPES_forcevariable_raspberrypi3-64 = "rpi-sdimg.gz"
+IMAGE_FSTYPES_forcevariable_raspberrypi4 = "rpi-sdimg.gz"
+IMAGE_FSTYPES_forcevariable_raspberrypi4-64 = "rpi-sdimg.gz"
+IMAGE_FSTYPES_forcevariable_pinephone = "wic.gz wic.bmap"
+
 BB_DISKMON_DIRS = "\
     STOPTASKS,${TMPDIR},1G,100K \
     STOPTASKS,${DL_DIR},1G,100K \
@@ -402,6 +396,15 @@ BB_DISKMON_DIRS = "\
     ABORT,${SSTATE_DIR},100M,1K \
     ABORT,/tmp,10M,1K"
 EOF
+
+    if [ ! -d ${BUILD_TOPDIR}/buildhistory/ ] ; then
+        cd ${BUILD_TOPDIR}
+        git clone git@github.com:webOS-ports/buildhistory.git
+        cd buildhistory;
+        git checkout -b luneos-${BUILD_VERSION} origin/luneos-${BUILD_VERSION} || git checkout -b luneos-${BUILD_VERSION} origin/webos-ports-setup
+        cd ../..
+    fi
+
 }
 
 function run_rsync {

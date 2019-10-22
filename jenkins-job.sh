@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.6.0"
+BUILD_SCRIPT_VERSION="2.6.1"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -289,8 +289,8 @@ function run_sstate-cleanup {
         ARCHIVES1=`sh -c "${OPENSSL}"`; echo "number of openssl archives: `echo "$ARCHIVES1" | wc -l`"; echo "$ARCHIVES1"
         openembedded-core/scripts/sstate-cache-management.sh -L --cache-dir=sstate-cache -y -d --extra-archs=${ARCHS// /,} || true
         echo "number of archives for removed aarch64-cortexa53 architecture:"
-        find sstate-cache -name \*:aarch64-cortexa53:\* | wc -l
-        find sstate-cache -name \*:aarch64-cortexa53:\* -delete
+        find sstate-cache/ -name \*:aarch64-cortexa53:\* | wc -l
+        find sstate-cache/ -name \*:aarch64-cortexa53:\* -delete
         DU2=`du -hs sstate-cache/`
         echo "$DU2"
         ARCHIVES2=`sh -c "${OPENSSL}"`; echo "number of openssl archives: `echo "$ARCHIVES2" | wc -l`"; echo "$ARCHIVES2"

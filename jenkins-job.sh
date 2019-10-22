@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.6.2"
+BUILD_SCRIPT_VERSION="2.6.3"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -744,7 +744,10 @@ function delete_unnecessary_images_webosose {
     rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/README_-_DO_NOT_DELETE_FILES_IN_THIS_DIRECTORY.txt
     case ${BUILD_MACHINE} in
         qemux86|qemux86-64)
-            # keep only wic.vmdk.gz
+            # unfortunately vmdk.zip in IMAGE_FSTYPES doesn't work with the old Yocto used by webOS OSE
+            for i in BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}-*.vmdk; do zip -j $i.zip $i; done
+            for i in BUILD/deploy/images/${BUILD_MACHINE}/webos-image-devel-${BUILD_MACHINE}-*.vmdk; do zip -j $i.zip $i; done
+            # keep only wic.vmdk.zip
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}.rootfs.*
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}.hdddirect
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}.qemuboot.conf
@@ -774,7 +777,15 @@ function delete_unnecessary_images_webosose {
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/*.efi
             ;;
         raspberrypi3|raspberrypi4)
-            # keep only wic.gz
+            # unfortunately rpi-sdimg.zip in IMAGE_FSTYPES doesn't work, because how the webOS OSE handles the hardlinks in deploy, this will stay a symlink to the file which we remove later
+            for i in BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}-*.wic; do zip -j $i.zip $i; done
+            for i in BUILD/deploy/images/${BUILD_MACHINE}/webos-image-devel-${BUILD_MACHINE}-*.wic; do zip -j $i.zip $i; done
+            # keep only wic.zip
+            rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/boot.scr
+            rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/initramfs*
+            rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/ostree_repo
+            rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/u-boot*
+            rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/uImage*
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/Image*
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/zImage*
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/modules-*
@@ -787,6 +798,8 @@ function delete_unnecessary_images_webosose {
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}-*.tar.gz
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}-*.tar.bz2
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}-*.rpi-sdimg
+            rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}-*.wic
+            rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}-*.ota-ext4
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-devel-${BUILD_MACHINE}.vfat
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-devel-${BUILD_MACHINE}.rootfs.*
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-devel-${BUILD_MACHINE}-*.ext4
@@ -794,6 +807,8 @@ function delete_unnecessary_images_webosose {
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-devel-${BUILD_MACHINE}-*.tar.gz
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-devel-${BUILD_MACHINE}-*.tar.bz2
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-devel-${BUILD_MACHINE}-*.rpi-sdimg
+            rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-devel-${BUILD_MACHINE}-*.wic
+            rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-devel-${BUILD_MACHINE}-*.ota-ext4
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/*.testdata.json
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/*.dtb
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/*.dtbo
@@ -860,12 +875,12 @@ function run_webosose {
 
     cat > webos-local.conf << EOF
 INHERIT += "rm_work"
-IMAGE_FSTYPES_raspberrypi3_pn-webos-image = "ota-ext4 wic.gz"
-IMAGE_FSTYPES_raspberrypi3_pn-webos-image-devel = "ota-ext4 wic.gz"
-IMAGE_FSTYPES_raspberrypi4_pn-webos-image = "ota-ext4 wic.gz"
-IMAGE_FSTYPES_raspberrypi4_pn-webos-image-devel = "ota-ext4 wic.gz"
-IMAGE_FSTYPES_qemux86_pn-webos-image = "wic.vmdk.gz"
-IMAGE_FSTYPES_qemux86_pn-webos-image-devel = "wic.vmdk.gz"
+IMAGE_FSTYPES_raspberrypi3_pn-webos-image = "ota-ext4 wic"
+IMAGE_FSTYPES_raspberrypi3_pn-webos-image-devel = "ota-ext4 wic"
+IMAGE_FSTYPES_raspberrypi4_pn-webos-image = "ota-ext4 wic"
+IMAGE_FSTYPES_raspberrypi4_pn-webos-image-devel = "ota-ext4 wic"
+IMAGE_FSTYPES_qemux86_pn-webos-image = "wic.vmdk"
+IMAGE_FSTYPES_qemux86_pn-webos-image-devel = "wic.vmdk"
 EOF
 
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.6.3"
+BUILD_SCRIPT_VERSION="2.6.4"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -520,7 +520,7 @@ function run_release {
         exit 1
     fi
     ssh jenkins@milla.nao "mkdir ~/htdocs/builds/releases/${RELEASE_NAME}"
-    ssh jenkins@milla.nao "cp -ra ~/htdocs/builds/luneos-stable-staging/${FEED_NUMBER}/* ~/htdocs/builds/releases/${RELEASE_NAME}"
+    ssh jenkins@milla.nao "cp -rav ~/htdocs/builds/luneos-stable-staging/${FEED_NUMBER}/* ~/htdocs/builds/releases/${RELEASE_NAME}"
     ssh jenkins@milla.nao "rm -rf ~/htdocs/builds/releases/${RELEASE_NAME}/ipk"
     if [ -n "${UNSUPPORTED_MACHINES}" ] ; then
         ssh jenkins@milla.nao "for UNSUPPORTED_MACHINE in ${UNSUPPORTED_MACHINES}; do rm -rf ~/htdocs/builds/releases/${RELEASE_NAME}/images/\${UNSUPPORTED_MACHINE}; done"

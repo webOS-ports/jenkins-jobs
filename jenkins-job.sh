@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.6.4"
+BUILD_SCRIPT_VERSION="2.6.5"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -385,16 +385,6 @@ IMAGE_FSTYPES_forcevariable_raspberrypi3-64 = "rpi-sdimg.gz"
 IMAGE_FSTYPES_forcevariable_raspberrypi4 = "rpi-sdimg.gz"
 IMAGE_FSTYPES_forcevariable_raspberrypi4-64 = "rpi-sdimg.gz"
 IMAGE_FSTYPES_forcevariable_pinephone = "wic.gz wic.bmap"
-
-BB_DISKMON_DIRS = "\
-    STOPTASKS,${TMPDIR},1G,100K \
-    STOPTASKS,${DL_DIR},1G,100K \
-    STOPTASKS,${SSTATE_DIR},1G,100K \
-    STOPTASKS,/tmp,100M,100K \
-    ABORT,${TMPDIR},100M,1K \
-    ABORT,${DL_DIR},100M,1K \
-    ABORT,${SSTATE_DIR},100M,1K \
-    ABORT,/tmp,10M,1K"
 EOF
 
     if [ ! -d ${BUILD_TOPDIR}/buildhistory/ ] ; then

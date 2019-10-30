@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.6.5"
+BUILD_SCRIPT_VERSION="2.6.6"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -388,13 +388,8 @@ IMAGE_FSTYPES_forcevariable_pinephone = "wic.gz wic.bmap"
 EOF
 
     if [ ! -d ${BUILD_TOPDIR}/buildhistory/ ] ; then
-        cd ${BUILD_TOPDIR}
-        git clone git@github.com:webOS-ports/buildhistory.git
-        cd buildhistory;
-        git checkout -b luneos-${BUILD_VERSION} origin/luneos-${BUILD_VERSION} || git checkout -b luneos-${BUILD_VERSION} origin/webos-ports-setup
-        cd ../..
+        git clone git@github.com:webOS-ports/buildhistory.git --branch luneos-${BUILD_VERSION} --single-branch --depth 1 ${BUILD_TOPDIR}/buildhistory
     fi
-
 }
 
 function run_rsync {

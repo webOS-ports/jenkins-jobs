@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.6.7"
+BUILD_SCRIPT_VERSION="2.6.8"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -397,12 +397,16 @@ function run_rsync {
     delete_unnecessary_images
     RESULT+=$?
 
-    if [ "${BUILD_VERSION}" = "stable" ] ; then
-        scripts/staging_sync.sh ${BUILD_TOPDIR}/tmp-glibc/deploy      jenkins@milla.nao:~/htdocs/builds/luneos-${BUILD_VERSION}-staging/wip
-        RESULT+=$?
+    if [ -d ${BUILD_TOPDIR}/tmp-glibc/deploy ] ; then
+        if [ "${BUILD_VERSION}" = "stable" ] ; then
+            scripts/staging_sync.sh ${BUILD_TOPDIR}/tmp-glibc/deploy      jenkins@milla.nao:~/htdocs/builds/luneos-${BUILD_VERSION}-staging/wip
+            RESULT+=$?
+        else
+            scripts/staging_sync.sh ${BUILD_TOPDIR}/tmp-glibc/deploy      jenkins@milla.nao:~/htdocs/builds/luneos-${BUILD_VERSION}/
+            RESULT+=$?
+        fi
     else
-        scripts/staging_sync.sh ${BUILD_TOPDIR}/tmp-glibc/deploy      jenkins@milla.nao:~/htdocs/builds/luneos-${BUILD_VERSION}/
-        RESULT+=$?
+        echo "Nothing in ${BUILD_TOPDIR}/tmp-glibc/deploy to rsync"
     fi
 
     rsync -avir --delete ${BUILD_TOPDIR}/sstate-cache/                jenkins@milla.nao:~/htdocs/builds/luneos-${BUILD_VERSION}/sstate-cache/

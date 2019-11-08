@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.6.6"
+BUILD_SCRIPT_VERSION="2.6.7"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -305,6 +305,7 @@ function run_sstate-cleanup {
 
 function run_compare-signatures {
     declare -i RESULT=0
+    sanity-check
     cd ${BUILD_TOPDIR}
     . ./setup-env
     openembedded-core/scripts/sstate-diff-machines.sh --targets=world --tmpdir=tmp-glibc/ --analyze --machines="hammerhead mako qemux86" | tee log.compare-signatures

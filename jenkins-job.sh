@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.6.8"
+BUILD_SCRIPT_VERSION="2.6.9"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -224,8 +224,37 @@ function run_build {
     . ./setup-env
     export MACHINE="${BUILD_MACHINE}"
     /usr/bin/time -f "${BUILD_TIME_STR}" \
-        bitbake -k ${BUILD_IMAGES} 2>&1 | tee /dev/stderr | grep '^TIME:' >> ${BUILD_TIME_LOG}
-    RESULT+=${PIPESTATUS[0]}
+        bitbake -k ${BUILD_IMAGES} 2>&1 | tee /dev/stderr | tee bitbake.log | grep '^TIME:' >> ${BUILD_TIME_LOG}
+    BITBAKE_RETURN=${PIPESTATUS[0]}
+    if [ "${BITBAKE_RETURN}" -ne 0 ] ; then
+        # Unfortunately the changes from:
+        # https://patchwork.openembedded.org/patch/143430/
+        # https://patchwork.openembedded.org/patch/143431/
+        # aren't going to be merged, so we need to deal with this mess :(
+        #
+        # grep if all ERRORS are of this kind which is safe to ignore in our infra where milla sometimes drops connection when fetching sstate archive
+        # ERROR: bluez5-5.50-r0 do_package_setscene: Fetcher failure: Unable to find file file://17/sstate:bluez5:core2-32-webos-linux:5.50:r0:core2-32:3:172ab064092514ef7c29f1ee396880790b698e18d3d8bd513c7cd2c0eef39a85_package.tgz;downloadfilename=17/sstate:bluez5:core2-32-webos-linux:5.50:r0:core2-32:3:172ab064092514ef7c29f1ee396880790b698e18d3d8bd513c7cd2c0eef39a85_package.tgz anywhere. The paths that were searched were:
+        #  /home/jenkins/workspace/luneos-testing/webos-ports/sstate-cache
+        #  /home/jenkins/workspace/luneos-testing/webos-ports/sstate-cache
+        # ERROR: bluez5-5.50-r0 do_package_setscene: No suitable staging package found
+        # ERROR: Logfile of failure stored in: /home/jenkins/workspace/luneos-testing/webos-ports/tmp-glibc/work/core2-32-webos-linux/bluez5/5.50-r0/temp/log.do_package_setscene.547
+        if grep -q "Summary: There were .* ERROR messages shown, returning a non-zero exit code." bitbake.log; then
+            ERRORS_FOUND=`grep "Summary: There were .* ERROR messages shown, returning a non-zero exit code." bitbake.log | sed 's/Summary: There were \(.*\) ERROR messages shown, returning a non-zero exit code./\1/g'`
+            ERRORS_SETSCENE=`grep -c "^ERROR: .* do_.*_setscene: Fetcher failure: Unable to find file" bitbake.log`
+            ERRORS_SETSCENE2=`grep -c "^ERROR: .* do_.*_setscene: No suitable staging package found" bitbake.log`
+            echo "There were ${ERRORS_FOUND} ERROR messages in bitbake log, from that ${ERRORS_SETSCENE} 'do_.*_setscene: Fetcher failures: ' and ${ERRORS_SETSCENE2} 'do_.*_setscene: No suitable staging package found' messages"
+            if [ ${ERRORS_FOUND} -ne `expr ${ERRORS_SETSCENE} + ${ERRORS_SETSCENE2}` ] ; then
+                echo "There were some other kinds of ERROR messages will respect the return code from bitbake:"
+                grep ERROR: bitbake.log | grep -v "^ERROR: .* do_.*_setscene: Fetcher failure: Unable to find file" | grep -v "^ERROR: .* do_.*_setscene: No suitable staging package found"
+                RESULT+=${BITBAKE_RETURN}
+            else
+                echo "All reported errors were about setscene failing to fetch sstate, we're going to ignore bitbake return code"
+                echo "It's relatively safe to ignore these error messages (the real task was executed instead, so the build finished OK and image was created correctly). It usually happens when e.g. our fileserver first shows that the sstate exists (over http) and then when bitbake is fetching the archive fileserver is temporarily unreachable or drops the connection. More details in https://patchwork.openembedded.org/patch/143431/ https://patchwork.openembedded.org/patch/143430/ which weren't applied, see why in: https://marc.info/?l=openembedded-core&m=150408018331252&w=2 https://marc.info/?l=openembedded-core&m=150407969131099&w=2"
+            fi
+        else
+            RESULT+=${BITBAKE_RETURN}
+        fi
+    fi
     exit ${RESULT}
 }
 

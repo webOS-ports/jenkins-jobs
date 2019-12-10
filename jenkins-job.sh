@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.6.9"
+BUILD_SCRIPT_VERSION="2.6.10"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -697,6 +697,7 @@ function delete_unnecessary_images {
                 rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/Image.gz*
                 rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/modules-*
                 rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/initramfs*
+                rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/busybox-static
                 ;;
             qemuarm|tenderloin|a500)
                 # keep uImage and rootfs.tar.gz
@@ -710,6 +711,8 @@ function delete_unnecessary_images {
                 ;;
             qemux86|qemux86-64)
                 # keep only image.zip
+                rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/luneos-image.env
+                rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/luneos-dev-image.env
                 rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/luneos-image-*
                 rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/luneos-dev-image-*
                 rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/bzImage*
@@ -736,6 +739,8 @@ function delete_unnecessary_images {
                 rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/*.dtb
                 ;;
             pinephone)
+                rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/luneos-image.env
+                rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/luneos-dev-image.env
                 rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/luneos-image-${M}.wic.gz
                 rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/luneos-dev-image-${M}.wic.gz
                 rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/luneos-image-${M}.wic.bmap

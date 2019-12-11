@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.6.10"
+BUILD_SCRIPT_VERSION="2.6.11"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -378,20 +378,25 @@ function run_prepare {
     sed -i '/^SSTATE_MIRRORS/d' ${BUILD_TOPDIR}/conf/local.conf
 
     if [ "${BUILD_VERSION}" = "unstable" ] ; then
-        echo "SSTATE_MIRRORS ?= \"\
-        file://.* http://build.webos-ports.org/luneos-${BUILD_VERSION}/sstate-cache/PATH \
-        \"" >> ${BUILD_TOPDIR}/conf/local.conf
+        cat >> ${BUILD_TOPDIR}/conf/local.conf << EOF
+SSTATE_MIRRORS ?= "\
+    file://.* http://build.webos-ports.org/luneos-${BUILD_VERSION}/sstate-cache/PATH \
+"
+BB_SIGNATURE_HANDLER ?= "OEEquivHash"
+BB_HASHSERVE = "auto"
+EOF
     elif [ "${BUILD_VERSION}" = "testing" ] ; then
-        echo "SSTATE_MIRRORS ?= \"\
-        file://.* http://build.webos-ports.org/luneos-${BUILD_VERSION}/sstate-cache/PATH \n\
-        file://.* http://build.webos-ports.org/luneos-unstable/sstate-cache/PATH \n\
-        \"" >> ${BUILD_TOPDIR}/conf/local.conf
+        cat >> ${BUILD_TOPDIR}/conf/local.conf << EOF
+SSTATE_MIRRORS ?= "\
+    file://.* http://build.webos-ports.org/luneos-${BUILD_VERSION}/sstate-cache/PATH \n\
+"
+EOF
     elif [ "${BUILD_VERSION}" = "stable" ] ; then
-        echo "SSTATE_MIRRORS ?= \"\
-        file://.* http://build.webos-ports.org/luneos-${BUILD_VERSION}/sstate-cache/PATH \n\
-        file://.* http://build.webos-ports.org/luneos-testing/sstate-cache/PATH \n\
-        file://.* http://build.webos-ports.org/luneos-unstable/sstate-cache/PATH \n\
-        \"" >> ${BUILD_TOPDIR}/conf/local.conf
+        cat >> ${BUILD_TOPDIR}/conf/local.conf << EOF
+SSTATE_MIRRORS ?= "\
+    file://.* http://build.webos-ports.org/luneos-${BUILD_VERSION}/sstate-cache/PATH \n\
+"
+EOF
     fi
 
     cat >> ${BUILD_TOPDIR}/conf/local.conf << EOF

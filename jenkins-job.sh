@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.6.12"
+BUILD_SCRIPT_VERSION="2.6.13"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -19,10 +19,10 @@ BUILD_TIMESTAMP_OLD=${BUILD_TIMESTAMP_START}
 
 BUILD_TIME_LOG=${BUILD_TOPDIR}/time.txt
 
-FILESERVER=jenkins@milla.nao
-FILESERVER_ROOT=${FILESERVER}:htdocs/
-FILESERVER_BUILDS=${FILESERVER_ROOT}/builds
-FILESERVER_SOURCES=${FILESERVER_ROOT}/sources
+FILESERVER=jenkins@milla.nao.TODO
+FILESERVER_ROOT=/media/ra_build_share/
+FILESERVER_BUILDS=${FILESERVER_ROOT}/wop-build
+FILESERVER_SOURCES=${FILESERVER_ROOT}/wop-sources
 
 function print_timestamp {
     BUILD_TIMESTAMP=`date -u +%s`
@@ -477,7 +477,7 @@ function run_update-manifest() {
         echo "Updating device image manifest for testing for machines ${SUPPORTED_MACHINES}"
         wget http://build.webos-ports.org/luneos-testing/device-images.json -O device-images.json
         for machine in ${SUPPORTED_MACHINES} ; do
-            image_path=`ssh ${FILESERVER} find /home2/jenkins/htdocs/builds/luneos-testing/images/$machine -type f \
+            image_path=`find ${FILESERVER_BUILDS}/luneos-testing/images/$machine -type f \
                 -name 'luneos-dev-emulator*.tar.gz' -o \
                 -name 'luneos-dev-package*.zip' -o \
                 -name 'luneos-dev-image*.zip' -o \
@@ -514,6 +514,8 @@ function run_update-manifest() {
 
 function run_new-staging {
     . scripts/staging_header.sh
+    echo "ERROR: needs to be updated for new fileserver"
+    exit 1
 
     DATE=`date +%s`
     CURRENT_STAGING_NUMBER=`echo ${CURRENT_STAGING} | sed 's/^0*//g'`
@@ -537,6 +539,8 @@ function run_sync-to-public {
         echo "ERROR: FEED_NUMBERS wasn't set"
         exit 1
     fi
+    echo "ERROR: needs to be updated for new fileserver"
+    exit 1
 
     for FEED in $FEED_NUMBERS; do
         bash -x scripts/staging_sync_to_public_feed.sh ${FILESERVER} $FEED
@@ -548,6 +552,8 @@ function run_release {
         echo "ERROR: FEED_NUMBER, RELEASE_NAME cannot be empty"
         exit 1
     fi
+    echo "ERROR: needs to be updated for new fileserver"
+    exit 1
     ssh ${FILESERVER} "mkdir ~/htdocs/builds/releases/${RELEASE_NAME}"
     ssh ${FILESERVER} "cp -rav ~/htdocs/builds/luneos-stable-staging/${FEED_NUMBER}/* ~/htdocs/builds/releases/${RELEASE_NAME}"
     ssh ${FILESERVER} "rm -rf ~/htdocs/builds/releases/${RELEASE_NAME}/ipk"

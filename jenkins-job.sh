@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.6.11"
+BUILD_SCRIPT_VERSION="2.6.12"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -18,6 +18,11 @@ BUILD_TIMESTAMP_START=`date -u +%s`
 BUILD_TIMESTAMP_OLD=${BUILD_TIMESTAMP_START}
 
 BUILD_TIME_LOG=${BUILD_TOPDIR}/time.txt
+
+FILESERVER=jenkins@milla.nao
+FILESERVER_ROOT=${FILESERVER}:htdocs/
+FILESERVER_BUILDS=${FILESERVER_ROOT}/builds
+FILESERVER_SOURCES=${FILESERVER_ROOT}/sources
 
 function print_timestamp {
     BUILD_TIMESTAMP=`date -u +%s`
@@ -232,7 +237,7 @@ function run_build {
         # https://patchwork.openembedded.org/patch/143431/
         # aren't going to be merged, so we need to deal with this mess :(
         #
-        # grep if all ERRORS are of this kind which is safe to ignore in our infra where milla sometimes drops connection when fetching sstate archive
+        # grep if all ERRORS are of this kind which is safe to ignore in our infra where fileserver sometimes drops connection when fetching sstate archive
         # ERROR: bluez5-5.50-r0 do_package_setscene: Fetcher failure: Unable to find file file://17/sstate:bluez5:core2-32-webos-linux:5.50:r0:core2-32:3:172ab064092514ef7c29f1ee396880790b698e18d3d8bd513c7cd2c0eef39a85_package.tgz;downloadfilename=17/sstate:bluez5:core2-32-webos-linux:5.50:r0:core2-32:3:172ab064092514ef7c29f1ee396880790b698e18d3d8bd513c7cd2c0eef39a85_package.tgz anywhere. The paths that were searched were:
         #  /home/jenkins/workspace/luneos-testing/webos-ports/sstate-cache
         #  /home/jenkins/workspace/luneos-testing/webos-ports/sstate-cache
@@ -350,7 +355,7 @@ function run_compare-signatures {
     # it's a lot of small files, get rid of it
     rm -rf sstate-diff-${BUILD_NUMBER}
 
-    rsync -avir sstate-diff-${BUILD_NUMBER}.tar.bz2 jenkins@milla.nao:~/htdocs/builds/luneos-${BUILD_VERSION}/
+    rsync -avir sstate-diff-${BUILD_NUMBER}.tar.bz2 ${FILESERVER_BUILDS}/luneos-${BUILD_VERSION}/
     RESULT+=$?
 
     exit ${RESULT}
@@ -433,27 +438,27 @@ function run_rsync {
 
     if [ -d ${BUILD_TOPDIR}/tmp-glibc/deploy ] ; then
         if [ "${BUILD_VERSION}" = "stable" ] ; then
-            scripts/staging_sync.sh ${BUILD_TOPDIR}/tmp-glibc/deploy      jenkins@milla.nao:~/htdocs/builds/luneos-${BUILD_VERSION}-staging/wip
+            scripts/staging_sync.sh ${BUILD_TOPDIR}/tmp-glibc/deploy      ${FILESERVER_BUILDS}/luneos-${BUILD_VERSION}-staging/wip
             RESULT+=$?
         else
-            scripts/staging_sync.sh ${BUILD_TOPDIR}/tmp-glibc/deploy      jenkins@milla.nao:~/htdocs/builds/luneos-${BUILD_VERSION}/
+            scripts/staging_sync.sh ${BUILD_TOPDIR}/tmp-glibc/deploy      ${FILESERVER_BUILDS}/luneos-${BUILD_VERSION}/
             RESULT+=$?
         fi
     else
         echo "Nothing in ${BUILD_TOPDIR}/tmp-glibc/deploy to rsync"
     fi
 
-    rsync -avir --delete ${BUILD_TOPDIR}/sstate-cache/                jenkins@milla.nao:~/htdocs/builds/luneos-${BUILD_VERSION}/sstate-cache/
+    rsync -avir --delete ${BUILD_TOPDIR}/sstate-cache/                ${FILESERVER_BUILDS}/luneos-${BUILD_VERSION}/sstate-cache/
     RESULT+=$?
     rsync -avir --no-links --exclude '*.done' --exclude '*_bad-checksum_*' --exclude git2 \
-                           --exclude svn --exclude bzr downloads/      jenkins@milla.nao:~/htdocs/sources/
+                           --exclude svn --exclude bzr downloads/      #{FILESERVER_SOURCES}/
     RESULT+=$?
     exit ${RESULT}
 }
 
 function run_halium-rsync {
-    [[ -d ${BUILD_WORKSPACE}/../halium-luneos-5.1/results/ ]] && rsync -avir ${BUILD_WORKSPACE}/../halium-luneos-5.1/results/ jenkins@milla.nas-admin.org:~/htdocs/builds/halium-luneos-5.1/
-    [[ -d ${BUILD_WORKSPACE}/../halium-luneos-7.1/results/ ]] && rsync -avir ${BUILD_WORKSPACE}/../halium-luneos-7.1/results/ jenkins@milla.nas-admin.org:~/htdocs/builds/halium-luneos-7.1/
+    [[ -d ${BUILD_WORKSPACE}/../halium-luneos-5.1/results/ ]] && rsync -avir ${BUILD_WORKSPACE}/../halium-luneos-5.1/results/ ${FILESERVER_BUILDS}/halium-luneos-5.1/
+    [[ -d ${BUILD_WORKSPACE}/../halium-luneos-7.1/results/ ]] && rsync -avir ${BUILD_WORKSPACE}/../halium-luneos-7.1/results/ ${FILESERVER_BUILDS}/halium-luneos-7.1/
 }
 
 function run_update-manifest() {
@@ -472,7 +477,7 @@ function run_update-manifest() {
         echo "Updating device image manifest for testing for machines ${SUPPORTED_MACHINES}"
         wget http://build.webos-ports.org/luneos-testing/device-images.json -O device-images.json
         for machine in ${SUPPORTED_MACHINES} ; do
-            image_path=`ssh jenkins@milla.nao find /home2/jenkins/htdocs/builds/luneos-testing/images/$machine -type f \
+            image_path=`ssh ${FILESERVER} find /home2/jenkins/htdocs/builds/luneos-testing/images/$machine -type f \
                 -name 'luneos-dev-emulator*.tar.gz' -o \
                 -name 'luneos-dev-package*.zip' -o \
                 -name 'luneos-dev-image*.zip' -o \
@@ -501,8 +506,8 @@ function run_update-manifest() {
         done
 
         # Sync everything to the public server
-        scp manifest.json jenkins@milla.nao:~/htdocs/builds/luneos-${BUILD_VERSION}/
-        scp device-images.json jenkins@milla.nao:~/htdocs/builds/luneos-${BUILD_VERSION}/
+        scp manifest.json ${FILESERVER_BUILDS}/luneos-${BUILD_VERSION}/
+        scp device-images.json ${FILESERVER_BUILDS}/luneos-${BUILD_VERSION}/
         rm -vf manifest.json device-images.json
     fi
 }
@@ -524,7 +529,7 @@ function run_new-staging {
     mv manifest.json.${CURRENT_STAGING} ${BUILD_TOPDIR}/tmp-glibc/deploy/
     ln -sf manifest.json.${CURRENT_STAGING} ${BUILD_TOPDIR}/tmp-glibc/deploy/manifest.json
 
-    bash -x scripts/staging_new.sh jenkins@milla.nao
+    bash -x scripts/staging_new.sh ${FILESERVER}
 }
 
 function run_sync-to-public {
@@ -534,7 +539,7 @@ function run_sync-to-public {
     fi
 
     for FEED in $FEED_NUMBERS; do
-        bash -x scripts/staging_sync_to_public_feed.sh jenkins@milla.nao $FEED
+        bash -x scripts/staging_sync_to_public_feed.sh ${FILESERVER} $FEED
     done
 }
 
@@ -543,11 +548,11 @@ function run_release {
         echo "ERROR: FEED_NUMBER, RELEASE_NAME cannot be empty"
         exit 1
     fi
-    ssh jenkins@milla.nao "mkdir ~/htdocs/builds/releases/${RELEASE_NAME}"
-    ssh jenkins@milla.nao "cp -rav ~/htdocs/builds/luneos-stable-staging/${FEED_NUMBER}/* ~/htdocs/builds/releases/${RELEASE_NAME}"
-    ssh jenkins@milla.nao "rm -rf ~/htdocs/builds/releases/${RELEASE_NAME}/ipk"
+    ssh ${FILESERVER} "mkdir ~/htdocs/builds/releases/${RELEASE_NAME}"
+    ssh ${FILESERVER} "cp -rav ~/htdocs/builds/luneos-stable-staging/${FEED_NUMBER}/* ~/htdocs/builds/releases/${RELEASE_NAME}"
+    ssh ${FILESERVER} "rm -rf ~/htdocs/builds/releases/${RELEASE_NAME}/ipk"
     if [ -n "${UNSUPPORTED_MACHINES}" ] ; then
-        ssh jenkins@milla.nao "for UNSUPPORTED_MACHINE in ${UNSUPPORTED_MACHINES}; do rm -rf ~/htdocs/builds/releases/${RELEASE_NAME}/images/\${UNSUPPORTED_MACHINE}; done"
+        ssh ${FILESERVER} "for UNSUPPORTED_MACHINE in ${UNSUPPORTED_MACHINES}; do rm -rf ~/htdocs/builds/releases/${RELEASE_NAME}/images/\${UNSUPPORTED_MACHINE}; done"
     fi
 }
 
@@ -922,10 +927,10 @@ EOF
 
     delete_unnecessary_images_webosose
 
-    rsync -avir ${BUILD_TOPDIR}/BUILD/deploy/images/${BUILD_MACHINE}/               jenkins@milla.nao:~/htdocs/builds/webosose/${BUILD_MACHINE}/
+    rsync -avir ${BUILD_TOPDIR}/BUILD/deploy/images/${BUILD_MACHINE}/               ${FILESERVER_BUILDS}/webosose/${BUILD_MACHINE}/
     RESULT+=$?
     rsync -avir --no-links --exclude '*.done' --exclude '*_bad-checksum_*' --exclude git2 \
-                --exclude svn --exclude bzr ${BUILD_TOPDIR}/downloads/              jenkins@milla.nao:~/htdocs/builds/webosose/sources/
+                --exclude svn --exclude bzr ${BUILD_TOPDIR}/downloads/              ${FILESERVER_BUILDS}/webosose/sources/
     RESULT+=$?
 
     sleep 10 # wait a bit for pseudo processes to finish before trying to umount it

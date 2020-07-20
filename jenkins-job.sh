@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.6.13"
+BUILD_SCRIPT_VERSION="2.6.14"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -457,8 +457,8 @@ function run_rsync {
 }
 
 function run_halium-rsync {
-    [[ -d ${BUILD_WORKSPACE}/../halium-luneos-5.1/results/ ]] && rsync -avir ${BUILD_WORKSPACE}/../halium-luneos-5.1/results/ ${FILESERVER_BUILDS}/halium-luneos-5.1/
-    [[ -d ${BUILD_WORKSPACE}/../halium-luneos-7.1/results/ ]] && rsync -avir ${BUILD_WORKSPACE}/../halium-luneos-7.1/results/ ${FILESERVER_BUILDS}/halium-luneos-7.1/
+    [[ -d ${BUILD_WORKSPACE}/../halium-luneos-5.1-build/halium-luneos-5.1/results/ ]] && rsync -avir ${BUILD_WORKSPACE}/../halium-luneos-5.1-build/halium-luneos-5.1/results/ ${FILESERVER_BUILDS}/halium-luneos-5.1/
+    [[ -d ${BUILD_WORKSPACE}/../halium-luneos-7.1-build/halium-luneos-7.1/results/ ]] && rsync -avir ${BUILD_WORKSPACE}/../halium-luneos-7.1-build/halium-luneos-7.1/results/ ${FILESERVER_BUILDS}/halium-luneos-7.1/
 }
 
 function run_update-manifest() {

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.6.16"
+BUILD_SCRIPT_VERSION="2.6.17"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -383,9 +383,6 @@ function run_prepare {
     sed -i '/^SSTATE_MIRRORS/d' ${BUILD_TOPDIR}/conf/local.conf
 
     cat >> ${BUILD_TOPDIR}/conf/local.conf << EOF
-BB_SIGNATURE_HANDLER ?= "OEEquivHash"
-BB_HASHSERVE = "auto"
-
 DISTRO_FEED_PREFIX = "luneos-${BUILD_VERSION}"
 DISTRO_FEED_URI = "http://build.webos-ports.org/luneos-${BUILD_VERSION}/ipk/"
 

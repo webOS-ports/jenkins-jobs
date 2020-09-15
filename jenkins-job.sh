@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.6.15"
+BUILD_SCRIPT_VERSION="2.6.16"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -386,10 +386,6 @@ function run_prepare {
 BB_SIGNATURE_HANDLER ?= "OEEquivHash"
 BB_HASHSERVE = "auto"
 
-SSTATE_MIRRORS ?= "\
-    file://.* http://build.webos-ports.org/luneos-${BUILD_VERSION}/sstate-cache/PATH \n\
-"
-
 DISTRO_FEED_PREFIX = "luneos-${BUILD_VERSION}"
 DISTRO_FEED_URI = "http://build.webos-ports.org/luneos-${BUILD_VERSION}/ipk/"
 
@@ -433,8 +429,6 @@ function run_rsync {
         echo "Nothing in ${BUILD_TOPDIR}/tmp-glibc/deploy to rsync"
     fi
 
-    rsync -avir --delete ${BUILD_TOPDIR}/sstate-cache/                ${FILESERVER_BUILDS}/luneos-${BUILD_VERSION}/sstate-cache/
-    RESULT+=$?
     rsync -avir --no-links --exclude '*.done' --exclude '*_bad-checksum_*' --exclude git2 \
                            --exclude svn --exclude bzr downloads/      #{FILESERVER_SOURCES}/
     RESULT+=$?

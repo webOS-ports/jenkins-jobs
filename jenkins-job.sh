@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.6.17"
+BUILD_SCRIPT_VERSION="2.6.18"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -373,7 +373,7 @@ function run_prepare {
     make update-conffiles 2>&1
 
     cp common/conf/local.conf ${BUILD_TOPDIR}/conf/local.conf
-    sed -i 's/#PARALLEL_MAKE.*/PARALLEL_MAKE = "-j 8"/'          ${BUILD_TOPDIR}/conf/local.conf
+    sed -i 's/#PARALLEL_MAKE.*/PARALLEL_MAKE = "-j 20"/'          ${BUILD_TOPDIR}/conf/local.conf
     sed -i 's/#BB_NUMBER_THREADS.*/BB_NUMBER_THREADS = "4"/' ${BUILD_TOPDIR}/conf/local.conf
     sed -i 's/# INHERIT += "rm_work"/INHERIT += "rm_work"/' ${BUILD_TOPDIR}/conf/local.conf
 

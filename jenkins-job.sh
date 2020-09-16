@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.6.17"
+BUILD_SCRIPT_VERSION="2.6.19"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -373,16 +373,12 @@ function run_prepare {
     make update-conffiles 2>&1
 
     cp common/conf/local.conf ${BUILD_TOPDIR}/conf/local.conf
-    sed -i 's/#PARALLEL_MAKE.*/PARALLEL_MAKE = "-j 8"/'          ${BUILD_TOPDIR}/conf/local.conf
     sed -i 's/#BB_NUMBER_THREADS.*/BB_NUMBER_THREADS = "4"/' ${BUILD_TOPDIR}/conf/local.conf
-    sed -i 's/# INHERIT += "rm_work"/INHERIT += "rm_work"/' ${BUILD_TOPDIR}/conf/local.conf
-
-    sed -i '/^DISTRO_FEED_/d' ${BUILD_TOPDIR}/conf/local.conf
-
-    # remove default SSTATE_MIRRORS ?= "file://.* http://build.webos-ports.org/luneos-${BUILD_VERSION}/sstate-cache/PATH"
-    sed -i '/^SSTATE_MIRRORS/d' ${BUILD_TOPDIR}/conf/local.conf
 
     cat >> ${BUILD_TOPDIR}/conf/local.conf << EOF
+# we're using tmpfs we need to save as much space in WORKDIRs as possible
+INHERIT += "rm_work"
+
 DISTRO_FEED_PREFIX = "luneos-${BUILD_VERSION}"
 DISTRO_FEED_URI = "http://build.webos-ports.org/luneos-${BUILD_VERSION}/ipk/"
 

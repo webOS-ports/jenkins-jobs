@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.6.19"
+BUILD_SCRIPT_VERSION="2.6.20"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -373,9 +373,16 @@ function run_prepare {
     make update-conffiles 2>&1
 
     cp common/conf/local.conf ${BUILD_TOPDIR}/conf/local.conf
-    sed -i 's/#BB_NUMBER_THREADS.*/BB_NUMBER_THREADS = "4"/' ${BUILD_TOPDIR}/conf/local.conf
 
     cat >> ${BUILD_TOPDIR}/conf/local.conf << EOF
+
+# Additions from jenkins-job.sh
+
+# keep the number of bitbake threads low, the default
+# meta/conf/bitbake.conf:BB_NUMBER_THREADS ?= "${@oe.utils.cpu_count()}"
+# is way too much for our VM
+BB_NUMBER_THREADS = "4"
+
 # we're using tmpfs we need to save as much space in WORKDIRs as possible
 INHERIT += "rm_work"
 

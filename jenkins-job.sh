@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.6.21"
+BUILD_SCRIPT_VERSION="2.6.22"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -751,6 +751,7 @@ function delete_unnecessary_images {
                 rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/sun50i*
                 rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/*testdata.json
                 rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/*.dtb
+                rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/scp-${M}.*
                 ;;
             *)
                 echo "ERROR: ${BUILD_SCRIPT_NAME}-${BUILD_SCRIPT_VERSION} Unrecognized machine: '${M}', script doesn't know which images to delete"

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.6.24"
+BUILD_SCRIPT_VERSION="2.6.25"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -866,11 +866,17 @@ function sanity_check_workspace {
         if [ "${BUILD_TYPE}" = "kill-stalled" ] ; then
             echo "WARN: ${BUILD_SCRIPT_NAME}-${BUILD_SCRIPT_VERSION} There is some bitbake process already running from '${BUILD_TOPDIR}', maybe some stalled process from aborted job?"
         else
-            echo "ERROR: ${BUILD_SCRIPT_NAME}-${BUILD_SCRIPT_VERSION} There is some bitbake process already running from '${BUILD_TOPDIR}', maybe some stalled process from aborted job? Maybe just bitbake-server slowly closing, wait 5 mins and retry"
-            sleep 300
+            echo "ERROR: ${BUILD_SCRIPT_NAME}-${BUILD_SCRIPT_VERSION} There is some bitbake process already running from '${BUILD_TOPDIR}', maybe some stalled process from aborted job? Maybe just bitbake-server slowly closing, wait 1 min and retry"
+            sleep 60
             if ps aux | grep "${BUILD_TOPDIR}/bitbake/bin/[b]itbake"; then
-               echo "ERROR: ${BUILD_SCRIPT_NAME}-${BUILD_SCRIPT_VERSION} There is still some bitbake process already running from '${BUILD_TOPDIR}', maybe some stalled process from aborted job? Abording"
-               exit 1
+                echo "ERROR: ${BUILD_SCRIPT_NAME}-${BUILD_SCRIPT_VERSION} There is still some bitbake process already running from '${BUILD_TOPDIR}', maybe some stalled process from aborted job? Maybe just bitbake-server slowly closing, wait another 5 mins and retry"
+                sleep 300
+                if ps aux | grep "${BUILD_TOPDIR}/bitbake/bin/[b]itbake"; then
+                    echo "ERROR: ${BUILD_SCRIPT_NAME}-${BUILD_SCRIPT_VERSION} There is still some bitbake process already running from '${BUILD_TOPDIR}', maybe some stalled process from aborted job? Abording"
+                    exit 1
+                else
+                    echo "INFO: stalled processes are gone, starting the build"
+                fi
             fi
         fi
     fi

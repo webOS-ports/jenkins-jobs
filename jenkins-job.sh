@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.6.23"
+BUILD_SCRIPT_VERSION="2.6.24"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -729,6 +729,7 @@ function delete_unnecessary_images {
                 rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/zImage*
                 rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/Image*
                 rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/bcm2835-bootfiles
+                rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/bootfiles
                 rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/*testdata.json
                 rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/*.dtbo
                 rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/*.dtb

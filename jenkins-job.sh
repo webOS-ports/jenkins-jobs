@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.6.25"
+BUILD_SCRIPT_VERSION="2.6.26"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -214,6 +214,34 @@ function set_images {
     esac
 }
 
+function parse_bitbake_logs {
+    echo "sstate reuse stats:"
+    grep "^NOTE: .* sstate reuse.*scratch" $*
+
+    echo "WARNING messages about generic license:"
+    grep "^WARNING:" $* | grep "No generic license file exists for: "
+
+    echo "WARNING messages about license:"
+    grep "^WARNING:" $* | grep "The license listed .* was not in the licenses collected for recipe"
+
+    echo "WARNING messages caused by sota:"
+    grep "^WARNING:" $* | grep "Android repo tool not found"
+    grep "^WARNING:" $* | grep "Data in /media directory is not preserved by OSTree"
+    grep "^WARNING:" $* | grep "SOTA_PACKED_CREDENTIALS not set."
+
+    echo "Other WARNING messages:"
+    grep "^WARNING:" $* | grep -v "No generic license file exists for: " | grep -v "The license listed .* was not in the licenses collected for recipe" | grep -v "Android repo tool not found" | grep -v "Data in /media directory is not preserved by OSTree" | grep -v "SOTA_PACKED_CREDENTIALS not set."
+
+    echo "ERROR messages:"
+    grep "^ERROR:" $*
+
+    echo "Other error messages:"
+    grep -i "error[: ]" $* | grep -v "^ERROR:" | grep -v "Summary:"
+
+    echo "Summary:"
+    grep "Summary:" $*
+}
+
 function run_build {
     declare -i RESULT=0
     sanity-check
@@ -260,6 +288,7 @@ function run_build {
             RESULT+=${BITBAKE_RETURN}
         fi
     fi
+    parse_bitbake_logs bitbake.log
     exit ${RESULT}
 }
 
@@ -919,7 +948,7 @@ EOF
     export MACHINE="${BUILD_MACHINE}"
 
     /usr/bin/time -f "${BUILD_TIME_STR}" \
-        bitbake -k ${BUILD_IMAGES} 2>&1 | tee /dev/stderr | grep '^TIME:' >> ${BUILD_TIME_LOG}
+        bitbake -k ${BUILD_IMAGES} 2>&1 | tee /dev/stderr | tee bitbake.log | grep '^TIME:' >> ${BUILD_TIME_LOG}
     RESULT+=${PIPESTATUS[0]}
 
     delete_unnecessary_images_webosose
@@ -929,6 +958,7 @@ EOF
     rsync -avir --no-links --exclude '*.done' --exclude '*_bad-checksum_*' --exclude git2 \
                 --exclude svn --exclude bzr ${BUILD_TOPDIR}/downloads/              ${FILESERVER_BUILDS}/webosose/sources/
     RESULT+=$?
+    parse_bitbake_logs bitbake.log
 
     sleep 10 # wait a bit for pseudo processes to finish before trying to umount it
     umount ${BUILD_TOPDIR}/BUILD

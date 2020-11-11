@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.6.27"
+BUILD_SCRIPT_VERSION="2.6.28"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -828,6 +828,8 @@ function delete_unnecessary_images_webosose {
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/modules-*
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/*.testdata.json
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/*.efi
+            rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/*-oss-pkg-info.yaml
+            rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/*.env
             ;;
         raspberrypi3|raspberrypi4)
             # unfortunately rpi-sdimg.zip in IMAGE_FSTYPES doesn't work, because how the webOS OSE handles the hardlinks in deploy, this will stay a symlink to the file which we remove later
@@ -843,6 +845,7 @@ function delete_unnecessary_images_webosose {
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/zImage*
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/modules-*
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/bcm2835-bootfiles
+            rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/bootfiles
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}.vfat
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}.rootfs.*
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}-*.ext3
@@ -865,6 +868,9 @@ function delete_unnecessary_images_webosose {
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/*.testdata.json
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/*.dtb
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/*.dtbo
+            rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/*-oss-pkg-info.yaml
+            rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/*.env
+            rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/fw_env.config*
             ;;
         *)
             echo "ERROR: ${BUILD_SCRIPT_NAME}-${BUILD_SCRIPT_VERSION} Unrecognized machine: '${BUILD_MACHINE}', script doesn't know which images to build"

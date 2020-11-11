@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.6.26"
+BUILD_SCRIPT_VERSION="2.6.27"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -216,30 +216,33 @@ function set_images {
 
 function parse_bitbake_logs {
     echo "sstate reuse stats:"
-    grep "^NOTE: .* sstate reuse.*scratch" $*
+    grep "^NOTE: .* sstate reuse.*scratch" $* | sort | uniq -c
 
     echo "WARNING messages about generic license:"
-    grep "^WARNING:" $* | grep "No generic license file exists for: "
+    grep "^WARNING:" $* | grep "No generic license file exists for: " | sort | uniq -c
 
     echo "WARNING messages about license:"
-    grep "^WARNING:" $* | grep "The license listed .* was not in the licenses collected for recipe"
+    grep "^WARNING:" $* | grep "The license listed .* was not in the licenses collected for recipe" | sort | uniq -c
+
+    echo "WARNING messages about version going backwards:"
+    grep "^WARNING:" $* | grep "\[version-going-backwards\]" | sort | uniq -c
 
     echo "WARNING messages caused by sota:"
-    grep "^WARNING:" $* | grep "Android repo tool not found"
-    grep "^WARNING:" $* | grep "Data in /media directory is not preserved by OSTree"
-    grep "^WARNING:" $* | grep "SOTA_PACKED_CREDENTIALS not set."
+    grep "^WARNING:" $* | grep "Android repo tool not found" | sort | uniq -c
+    grep "^WARNING:" $* | grep "Data in /media directory is not preserved by OSTree" | sort | uniq -c
+    grep "^WARNING:" $* | grep "SOTA_PACKED_CREDENTIALS not set." | sort | uniq -c
 
     echo "Other WARNING messages:"
-    grep "^WARNING:" $* | grep -v "No generic license file exists for: " | grep -v "The license listed .* was not in the licenses collected for recipe" | grep -v "Android repo tool not found" | grep -v "Data in /media directory is not preserved by OSTree" | grep -v "SOTA_PACKED_CREDENTIALS not set."
+    grep "^WARNING:" $* | grep -v "No generic license file exists for: " | grep -v "The license listed .* was not in the licenses collected for recipe" | grep -v "Android repo tool not found" | grep -v "Data in /media directory is not preserved by OSTree" | grep -v "SOTA_PACKED_CREDENTIALS not set." | grep -v "\[version-going-backwards\]" | sort | uniq -c
 
     echo "ERROR messages:"
-    grep "^ERROR:" $*
+    grep "^ERROR:" $* | sort | uniq -c
 
     echo "Other error messages:"
-    grep -i "error[: ]" $* | grep -v "^ERROR:" | grep -v "Summary:"
+    grep -i "error[: ]" $* | grep -v "^ERROR:" | grep -v "Summary:" | sort | uniq -c
 
     echo "Summary:"
-    grep "Summary:" $*
+    grep "Summary:" $* | sort | uniq -c
 }
 
 function run_build {

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.6.28"
+BUILD_SCRIPT_VERSION="2.6.29"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -468,8 +468,7 @@ function run_rsync {
 }
 
 function run_halium-rsync {
-    [[ -d ${BUILD_WORKSPACE}/../halium-luneos-5.1-build/halium-luneos-5.1/results/ ]] && rsync -avir ${BUILD_WORKSPACE}/../halium-luneos-5.1-build/halium-luneos-5.1/results/ ${FILESERVER_BUILDS}/halium-luneos-5.1/
-    [[ -d ${BUILD_WORKSPACE}/../halium-luneos-7.1-build/halium-luneos-7.1/results/ ]] && rsync -avir ${BUILD_WORKSPACE}/../halium-luneos-7.1-build/halium-luneos-7.1/results/ ${FILESERVER_BUILDS}/halium-luneos-7.1/
+    [[ -d ${BUILD_WORKSPACE}/../halium-luneos-${BUILD_VERSION}-build/halium-luneos-${BUILD_VERSION}/results/ ]] && rsync -avir ${BUILD_WORKSPACE}/../halium-luneos-${BUILD_VERSION}-build/halium-luneos-${BUILD_VERSION}/results/ ${FILESERVER_BUILDS}/halium-luneos-${BUILD_VERSION}/
 }
 
 function run_update-manifest() {
@@ -594,7 +593,7 @@ function run_halium {
     if [[ "${BUILD_VERSION}" = "5.1" ]] ; then
         repo init --depth=1 -u https://github.com/Halium/android.git -b halium-5.1
     else
-        repo init --depth=1 -u https://github.com/webos-ports/android.git -b luneos-halium-7.1
+        repo init --depth=1 -u https://github.com/webos-ports/android.git -b luneos-halium-${BUILD_VERSION}
         (cd .repo/manifests ; git pull )
     fi
 
@@ -609,6 +608,8 @@ function run_halium {
         halium_build_device tenderloin cm_tenderloin-userdebug
         halium_build_device mako aosp_mako-userdebug
         halium_build_device hammerhead aosp_hammerhead-userdebug
+    elif [[ "${BUILD_VERSION}" = "9.0" ]] ; then
+        halium_build_device rosy lineage_rosy-userdebug
     else
         halium_build_device onyx lineage_onyx-userdebug
         halium_build_device mido lineage_mido-userdebug
@@ -661,6 +662,8 @@ halium_build_device() {
     # retrieve device's manifest
     ./halium/devices/setup $MACHINE --force-sync
 
+    [[ "${BUILD_VERSION}" = "9.0" ]] && hybris-patches/apply-patches.sh --mb
+
     source build/envsetup.sh
 
     #For Ubuntu 18.04 we will need to use either of below:
@@ -671,7 +674,11 @@ halium_build_device() {
     #make clobber
 
     ${BUILD_CMD} ${BUILD_TARGET}
-    mka systemimage
+    if [[ "${BUILD_VERSION}" = "9.0" ]]; then
+        mka systemimage vendorimage
+    else
+        mka systemimage
+    fi
     if [ $? != 0 ]; then
         echo "Build of Halium ${BUILD_VERSION} for $MACHINE failed"
         exit 1

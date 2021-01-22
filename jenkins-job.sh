@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.6.28"
+BUILD_SCRIPT_VERSION="2.6.29"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -462,7 +462,7 @@ function run_rsync {
     fi
 
     rsync -avir --no-links --exclude '*.done' --exclude '*_bad-checksum_*' --exclude git2 \
-                           --exclude svn --exclude bzr downloads/      #{FILESERVER_SOURCES}/
+                           --exclude svn --exclude bzr downloads/      ${FILESERVER_SOURCES}/
     RESULT+=$?
     exit ${RESULT}
 }

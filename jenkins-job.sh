@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.6.31"
+BUILD_SCRIPT_VERSION="2.6.32"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -958,6 +958,13 @@ function run_webosose {
     ./mcf --command update --clean
 
     cat > webos-local.conf << EOF
+# Additions from jenkins-job.sh
+
+# keep the number of bitbake threads low, the default
+# meta/conf/bitbake.conf:BB_NUMBER_THREADS ?= "\${@oe.utils.cpu_count()}"
+# is way too much for our VM
+BB_NUMBER_THREADS = "4"
+
 INHERIT += "rm_work"
 IMAGE_FSTYPES_raspberrypi3_pn-webos-image = "ota-ext4 wic"
 IMAGE_FSTYPES_raspberrypi3_pn-webos-image-devel = "ota-ext4 wic"

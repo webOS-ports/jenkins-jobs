@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.6.33"
+BUILD_SCRIPT_VERSION="2.6.34"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -607,16 +607,19 @@ function run_halium {
 
     rm -rf ${BUILD_DIR}/out
 
-    if [[ "${BUILD_VERSION}" = "5.1" ]] ; then
-        halium_build_device tenderloin cm_tenderloin-userdebug
-        halium_build_device mako aosp_mako-userdebug
-    elif [[ "${BUILD_VERSION}" = "7.1" ]] ; then
+#    if [[ "${BUILD_VERSION}" = "5.1" ]] ; then
+#        halium_build_device tenderloin cm_tenderloin-userdebug
+#        halium_build_device mako aosp_mako-userdebug
+#    elif [[ "${BUILD_VERSION}" = "7.1" ]] ; then
+    if [[ "${BUILD_VERSION}" = "7.1" ]] ; then
         halium_build_device onyx lineage_onyx-userdebug
     elif [[ "${BUILD_VERSION}" = "9.0" ]] ; then
         # Disable mido build for now, since manifest is missing (needs checking and pushing)
         # halium_build_device mido lineage_mido-userdebug
         halium_build_device hammerhead lineage_hammerhead-userdebug
+        halium_build_device mako lineage_mako-userdebug
         halium_build_device rosy lineage_rosy-userdebug
+        halium_build_device tenderloin lineage_tenderloin-userdebug
         halium_build_device tissot lineage_tissot-userdebug
     else
         echo "Unknown Halium version: '${BUILD_VERSION}'.."

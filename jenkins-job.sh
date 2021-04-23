@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.6.35"
+BUILD_SCRIPT_VERSION="2.6.36"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -471,7 +471,9 @@ function run_rsync {
 }
 
 function run_halium-rsync {
-    [[ -d ${BUILD_WORKSPACE}/../halium-luneos-${BUILD_VERSION}-build/halium-luneos-${BUILD_VERSION}/results/ ]] && rsync -avir ${BUILD_WORKSPACE}/../halium-luneos-${BUILD_VERSION}-build/halium-luneos-${BUILD_VERSION}/results/ ${FILESERVER_BUILDS}/halium-luneos-${BUILD_VERSION}/
+    for VERSION in 5.1 7.1 9.0; do
+        [[ -d ${BUILD_WORKSPACE}/../halium-luneos-${VERSION}-build/halium-luneos-${VERSION}/results/ ]] && rsync -avir ${BUILD_WORKSPACE}/../halium-luneos-${VERSION}-build/halium-luneos-${VERSION}/results/ ${FILESERVER_BUILDS}/halium-luneos-${VERSION}/
+    done
 }
 
 function run_update-manifest() {
@@ -684,7 +686,7 @@ halium_build_device() {
     else
         mka systemimage
     fi
-    
+
     if [ $? != 0 ]; then
         echo "Build of Halium ${BUILD_VERSION} for $MACHINE failed"
         exit 1
@@ -695,7 +697,11 @@ halium_build_device() {
         #touch filesystem_config.txt
         #cp ramdisk-android.img android-ramdisk.img
         #tar cvjf ${ARCHIVE_NAME} system android-ramdisk.img filesystem_config.txt system.img
-        tar cvjf ${ARCHIVE_NAME} system.img vendor.img
+        if [[ "${BUILD_VERSION}" = "9.0" ]] ; then
+            tar cvjf ${ARCHIVE_NAME} system.img vendor.img
+        else
+            tar cvjf ${ARCHIVE_NAME} system.img
+        fi
         tar cvjf ${DEBUG_ARCHIVE_NAME} symbols/
     cd ${BUILD_DIR}
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.6.37"
+BUILD_SCRIPT_VERSION="2.6.38"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -48,13 +48,13 @@ function parse_job_name {
         webosose_*)
             BUILD_VERSION="webosose"
             ;;
-        LuneOS/halium-luneos-5.1-build)
+        LuneOS/halium-luneos-5.1-build*)
             BUILD_VERSION="5.1"
             ;;
-        LuneOS/halium-luneos-7.1-build)
+        LuneOS/halium-luneos-7.1-build*)
             BUILD_VERSION="7.1"
             ;;
-        LuneOS/halium-luneos-9.0-build)
+        LuneOS/halium-luneos-9.0-build*)
             BUILD_VERSION="9.0"
             ;;
         LuneOS/halium-luneos-rsync)
@@ -137,7 +137,8 @@ function parse_job_name {
             # global job
             ;;
         LuneOS/halium-luneos-*)
-            # global job
+            # global job, unless matched already above
+            BUILD_MACHINE="all-of-them"
             ;;
         *)
             echo "ERROR: ${BUILD_SCRIPT_NAME}-${BUILD_SCRIPT_VERSION} Unrecognized machine in JOB_NAME: '${JOB_NAME}', it should end with '_a500', '_grouper', '_hammerhead', '_maguro', '_mako', '_mido', '_onyx', '_pinephone', '_qemuarm', '_qemux86', '_qemux86-64', '_rosy', '_tenderloin', '_tissot', '_raspberrypi2' or '_raspberrypi3' or '_raspberrypi3-64' or '_raspberrypi4' or '_raspberrypi4-64'"
@@ -185,6 +186,9 @@ function parse_job_name {
             ;;
         LuneOS/halium-luneos-rsync)
             BUILD_TYPE="halium-rsync"
+            ;;
+        LuneOS/halium-luneos-cleanup)
+            BUILD_TYPE="halium-cleanup"
             ;;
         *)
             BUILD_TYPE="build"
@@ -476,6 +480,13 @@ function run_halium-rsync {
     done
 }
 
+function run_halium-cleanup {
+    for VERSION in 5.1 7.1 9.0; do
+        rm -rf ${BUILD_WORKSPACE}/../halium-luneos-${VERSION}-build/halium-luneos-${VERSION}/results/ \
+            ${BUILD_WORKSPACE}/../halium-luneos-${VERSION}-build/halium-luneos-${VERSION}/out
+    done
+}
+
 function run_update-manifest() {
     echo "BUILD_VERSION = $BUILD_VERSION"
     echo "BUILD_ID = $BUILD_ID"
@@ -610,17 +621,20 @@ function run_halium {
     rm -rf ${BUILD_DIR}/out
 
     if [[ "${BUILD_VERSION}" = "7.1" ]] ; then
-        halium_build_device onyx lineage_onyx-userdebug
+        [[ "${BUILD_MACHINE}" = "onyx" || "${BUILD_MACHINE}" = "all-of-them" ]] && halium_build_device onyx lineage_onyx-userdebug
     elif [[ "${BUILD_VERSION}" = "9.0" ]] ; then
-        halium_build_device hammerhead lineage_hammerhead-userdebug
-        halium_build_device mako lineage_mako-userdebug
-        halium_build_device mido lineage_mido-userdebug
-        halium_build_device rosy lineage_rosy-userdebug
-        halium_build_device tenderloin lineage_tenderloin-userdebug
-        halium_build_device tissot lineage_tissot-userdebug
+        if [[ "${BUILD_MACHINE}" = "all-of-them" ]] ; then
+            for MACHINE in hammerhead mako mido rosy tenderloin tissot; do
+                halium_build_device ${MACHINE} lineage_${MACHINE}-userdebug
+                rm -rf ${BUILD_DIR}/out
+            done
+        else
+            halium_build_device ${BUILD_MACHINE} lineage_${BUILD_MACHINE}-userdebug
+        fi
     else
         echo "Unknown Halium version: '${BUILD_VERSION}'.."
     fi
+    rm -rf ${BUILD_DIR}/out
 }
 
 halium_publish_archive() {
@@ -1055,6 +1069,9 @@ case ${BUILD_TYPE} in
         ;;
     halium-rsync)
         run_halium-rsync
+        ;;
+    halium-cleanup)
+        run_halium-cleanup
         ;;
     *)
         echo "ERROR: ${BUILD_SCRIPT_NAME}-${BUILD_SCRIPT_VERSION} Unrecognized build type: '${BUILD_TYPE}', script doesn't know how to execute such job"

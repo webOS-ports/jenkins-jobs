@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.6.39"
+BUILD_SCRIPT_VERSION="2.6.40"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -917,7 +917,7 @@ function delete_unnecessary_images_webosose {
 }
 
 function sanity_check_workspace {
-    if [ "${BUILD_TYPE}" = "halium" -o "${BUILD_TYPE}" = "halium-rsync" ] ; then
+    if [ "${BUILD_TYPE}" = "halium" -o "${BUILD_TYPE}" = "halium-rsync" -o "${BUILD_TYPE}" = "halium-cleanup" ] ; then
         # known to be insane
         mkdir -p ${BUILD_TOPDIR} # just for BUILD_TIME_LOG
     elif [ "${BUILD_VERSION}" = "webosose" ] ; then

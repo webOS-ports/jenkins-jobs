@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.6.38"
+BUILD_SCRIPT_VERSION="2.6.39"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -58,6 +58,9 @@ function parse_job_name {
             BUILD_VERSION="9.0"
             ;;
         LuneOS/halium-luneos-rsync)
+            BUILD_VERSION="all"
+            ;;
+        LuneOS/halium-luneos-cleanup)
             BUILD_VERSION="all"
             ;;
         *)
@@ -181,7 +184,7 @@ function parse_job_name {
         *_release)
             BUILD_TYPE="release"
             ;;
-        LuneOS/halium-luneos-*-build)
+        LuneOS/halium-luneos-*-build*)
             BUILD_TYPE="halium"
             ;;
         LuneOS/halium-luneos-rsync)

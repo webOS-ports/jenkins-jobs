@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.6.40"
+BUILD_SCRIPT_VERSION="2.6.41"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -479,7 +479,12 @@ function run_rsync {
 
 function run_halium-rsync {
     for VERSION in 5.1 7.1 9.0; do
-        [[ -d ${BUILD_WORKSPACE}/../halium-luneos-${VERSION}-build/halium-luneos-${VERSION}/results/ ]] && rsync -avir ${BUILD_WORKSPACE}/../halium-luneos-${VERSION}-build/halium-luneos-${VERSION}/results/ ${FILESERVER_BUILDS}/halium-luneos-${VERSION}/
+        if [[ -d ${BUILD_WORKSPACE}/../halium-luneos-${VERSION}-build/halium-luneos-${VERSION}/results/ ]] ; then
+            echo "Rsync halium-luneos-${VERSION}-build/halium-luneos-${VERSION}/results/"
+            rsync -avir ${BUILD_WORKSPACE}/../halium-luneos-${VERSION}-build/halium-luneos-${VERSION}/results/ ${FILESERVER_BUILDS}/halium-luneos-${VERSION}/
+        else
+            echo "Nothing in halium-luneos-${VERSION}-build/halium-luneos-${VERSION}/results/ to rsync"
+        fi
     done
 }
 

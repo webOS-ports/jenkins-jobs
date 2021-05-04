@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.6.41"
+BUILD_SCRIPT_VERSION="2.6.42"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -612,7 +612,7 @@ function run_halium {
     repo status
 
     # reset all git repositories, not only those included in the manifest (where repo forall works fine)
-    for G in `find . -name .git`; do cd `dirname $G`; echo -n "$G: "; git reset --hard; cd - >/dev/null; done
+    for G in `find . -name .git`; do cd `dirname $G`; echo -n "$G: "; git clean -xdff; git reset --hard; cd - >/dev/null; done
 
     if [[ "${BUILD_VERSION}" = "5.1" ]] ; then
         repo init --depth=1 -u https://github.com/Halium/android.git -b halium-5.1
@@ -690,7 +690,12 @@ halium_build_device() {
     ./halium/devices/setup $MACHINE --force-sync
 
     # for Halium 9.0 we need to apply the patches from hybris-patches since the Android repos themselves are not forked and patched anymore.
-    [[ "${BUILD_VERSION}" = "9.0" ]] && hybris-patches/apply-patches.sh --mb
+    if [[ "${BUILD_VERSION}" = "9.0" ]] ; then
+        if ! hybris-patches/apply-patches.sh --mb; then
+            echo "Some patches failed to apply, fix hybris-patches!"
+            exit 1
+        fi
+    fi
 
     source build/envsetup.sh
 

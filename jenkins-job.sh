@@ -692,7 +692,7 @@ halium_build_device() {
     # for Halium 9.0 we need to apply the patches from hybris-patches since the Android repos themselves are not forked and patched anymore.
     if [[ "${BUILD_VERSION}" = "9.0" ]] ; then
         if ! hybris-patches/apply-patches.sh --mb; then
-            echo "Some patches failed to apply, fix hybris-patches!"
+            echo "ERROR: Some patches failed to apply, fix hybris-patches!"
             exit 1
         fi
     fi
@@ -714,7 +714,7 @@ halium_build_device() {
     fi
 
     if [ $? != 0 ]; then
-        echo "Build of Halium ${BUILD_VERSION} for $MACHINE failed"
+        echo "ERROR: Build of Halium ${BUILD_VERSION} for $MACHINE failed"
         exit 1
     fi
 

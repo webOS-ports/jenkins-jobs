@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.6.42"
+BUILD_SCRIPT_VERSION="2.6.43"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -793,6 +793,8 @@ function delete_unnecessary_images {
                 rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/grub-efi-bootia32.efi
                 rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/systemd-bootx64.efi
                 rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/systemd-bootia32.efi
+                rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/linuxx64.efi.stub
+                rm -rfv ${BUILD_TOPDIR}/tmp-glibc/deploy/images/${M}/linuxia32.efi.stub
                 ;;
             raspberrypi2|raspberrypi3|raspberrypi3-64|raspberrypi4|raspberrypi4-64)
                 # keep only luneos-dev-image-raspberrypiX.rpi-sdimg

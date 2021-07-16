@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.6.43"
+BUILD_SCRIPT_VERSION="2.6.44"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -905,6 +905,7 @@ function delete_unnecessary_images_webosose {
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}-*.rpi-sdimg
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}-*.wic
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-${BUILD_MACHINE}-*.ota-ext4
+            rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-dependency.json
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-devel-${BUILD_MACHINE}.vfat
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-devel-${BUILD_MACHINE}.rootfs.*
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-devel-${BUILD_MACHINE}-*.ext4
@@ -914,6 +915,7 @@ function delete_unnecessary_images_webosose {
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-devel-${BUILD_MACHINE}-*.rpi-sdimg
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-devel-${BUILD_MACHINE}-*.wic
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-devel-${BUILD_MACHINE}-*.ota-ext4
+            rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/webos-image-devel-dependency.json
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/*.testdata.json
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/*.dtb
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/*.dtbo

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.6.45"
+BUILD_SCRIPT_VERSION="2.6.46"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -1011,6 +1011,8 @@ IMAGE_FSTYPES_qemux86_pn-webos-image = "wic.vmdk"
 IMAGE_FSTYPES_qemux86_pn-webos-image-devel = "wic.vmdk"
 EOF
 
+    # Fix https://github.com/webosose/meta-webosose/commit/684eff8a59655385741ce86fc60cf327efa75821#diff-771526591a74adf4c3e403c0a2ed82480dfa46ff02aac107cfb11c48d0e755c9R8
+    echo 'LIC_FILES_CHKSUM_raspberrypi3 = "file://${COMMON_LICENSE_DIR}/Apache-2.0;md5=89aea4e17d99a7cacdbeed46a0096b10 file://oss-pkg-info.yaml;md5=2bdfe040dcf81b4038370ae96036c519"' >> meta-webosose/meta-webos/recipes-webos/g-camera-pipeline/g-camera-pipeline.bb
 
     . ./oe-init-build-env
     export MACHINE="${BUILD_MACHINE}"

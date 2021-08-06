@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_SCRIPT_VERSION="2.6.44"
+BUILD_SCRIPT_VERSION="2.6.45"
 BUILD_SCRIPT_NAME=`basename ${0}`
 
 pushd `dirname $0` > /dev/null
@@ -879,6 +879,7 @@ function delete_unnecessary_images_webosose {
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/*.efi
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/*-oss-pkg-info.yaml
             rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/*.env
+            rm -rfv BUILD/deploy/images/${BUILD_MACHINE}/linuxia32.efi.stub
             ;;
         raspberrypi3|raspberrypi4)
             # unfortunately rpi-sdimg.zip in IMAGE_FSTYPES doesn't work, because how the webOS OSE handles the hardlinks in deploy, this will stay a symlink to the file which we remove later
